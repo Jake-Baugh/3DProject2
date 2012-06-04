@@ -81,6 +81,9 @@
     <ClCompile Include="Code\Ground.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Code\DeferredRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
@@ -88,6 +91,7 @@
     <None Include="pull.sh" />
     <None Include="Resources\Effects\ModelObj.fx" />
     <None Include="Resources\Effects\Ground.fx" />
+    <None Include="Resources\Effects\Quad2D.fx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Code\Framework\Effect\Effect.hpp">
@@ -160,6 +164,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Code\Ground.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Code\DeferredRenderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

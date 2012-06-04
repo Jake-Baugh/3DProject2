@@ -6,6 +6,7 @@
 #include <Resources\ModelObj.hpp>
 #include <CameraController.hpp>
 #include <Ground.hpp>
+#include <DeferredRenderer.hpp>
 
 class Project : public Framework::Game
 {
@@ -41,8 +42,19 @@ private:
 
 	Helper::Camera mCamera;
 	CameraController* mCameraController;
+
+	DeferredRenderer mDeferredRenderer;
 	Resources::ModelObj mModel;
 	Ground mGround;
+
+	struct QuadVertex
+	{
+		D3DXVECTOR2 Position;
+		D3DXVECTOR2 UV;
+	};
+
+	Framework::VertexBuffer mVertexBuffer;
+	Framework::Effect::Effect mEffect;
 };
 
 #endif

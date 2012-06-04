@@ -42,3 +42,9 @@ void Ground::Draw(const Helper::Camera& camera)
 		mDevice->Draw(mVertexBuffer.GetElementCount(), 0);
 	}
 }
+
+// DEBUG
+void Ground::SetTexture(ID3D10ShaderResourceView* newTexture)
+{
+	mEffect.SetVariable("gModelTexture", newTexture);
+}

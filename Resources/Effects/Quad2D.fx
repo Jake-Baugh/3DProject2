@@ -1,6 +1,6 @@
 struct VS_INPUT
 {
-	float3		position	: POSITION;
+	float2		position	: POSITION;
 	float2		uv			: TEXCOORD;
 };
 
@@ -10,18 +10,11 @@ struct PS_INPUT
 	float2		uv			: TEXCOORD;
 };
 
-struct PS_OUTPUT
-{
-	float4		color		: SV_TARGET0;
-	float4		normal		: SV_TARGET1;
-};
-
 
 
 RasterizerState NoCulling
 {
 	CullMode = None;
-	//FillMode = Wireframe;
 };
 
 SamplerState linearSampler {
@@ -41,10 +34,12 @@ DepthStencilState EnableDepth
 
 cbuffer cbEveryFrame
 {
-	matrix	gMVP;
+	matrix gMVP;
 };
 
-Texture2D gModelTexture;
+Texture2D gTexture;
+float gNear;
+float gFar;
 
 
 
@@ -52,21 +47,25 @@ PS_INPUT VS(VS_INPUT input)
 {
 	PS_INPUT output;
 
-	output.position = mul(float4(input.position, 1.0), gMVP);
+	output.position = mul(float4(float3(input.position, 0.0f), 1.0), gMVP);
 	output.uv = input.uv;
 
 	return output;
 }
 
-PS_OUTPUT PS(PS_INPUT input)
+float4 PS(PS_INPUT input) : SV_TARGET0
 {
-	PS_OUTPUT output;
+	/*
+	float depth = gTexture.Sample(linearSampler, input.uv);
+	depth = gNear / (depth - gFar);
 
-	output.color = gModelTexture.Sample(linearSampler, input.uv);
-	output.normal = float4(0.0f, 1.0f, 0.0f, 0.0f);
+	return float4(depth, depth, depth, 1.0f);
+	*/
 
-	return output;
+	return gTexture.Sample(linearSampler, input.uv);
 }
+
+
 
 technique10 DrawTechnique
 {
