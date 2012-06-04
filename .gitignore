@@ -1,0 +1,9 @@
+# ignore compiled files
+Build/
+Dist/
+
+# ignore visual studio session files
+ipch/
+*.sdf
+*.opensdf
+*.suo

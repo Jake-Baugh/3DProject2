@@ -1,0 +1,1 @@
+git push git@github.com:rarosu/3DProject2.git $1
