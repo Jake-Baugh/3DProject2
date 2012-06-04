@@ -27,7 +27,8 @@ Project::Project(HINSTANCE instance)
 	: Game(instance, WindowDescription().Description, ContextDescription().Description)
 	, mCamera(ProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight()).Frustum.CreatePerspectiveProjection(), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f))
 	, mModel(mD3DContext.GetDevice(), "Pacman2.obj")
-	, mCameraController(new CircleCameraController(&mCamera, D3DXVECTOR3(0, 0, 0), 10.0f, 5.0f))
+	, mCameraController(new CircleCameraController(&mCamera, D3DXVECTOR3(0, 0, 0), 15.0f, 10.0f))
+	, mGround(mD3DContext.GetDevice())
 {}
 
 Project::~Project() throw()
@@ -53,6 +54,7 @@ void Project::Update(float dt)
 
 void Project::Draw(float dt)
 {
+	mGround.Draw(mCamera);
 	mModel.Bind();
-	mModel.Draw(D3DXVECTOR3(0.0f, 0.0f, 0.0f), mCamera);
+	mModel.Draw(D3DXVECTOR3(0.0f, 1.0f, 0.0f), mCamera);
 }

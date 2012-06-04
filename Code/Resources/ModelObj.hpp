@@ -31,7 +31,7 @@ namespace Resources
 	private:
 		ID3D10Device* mDevice;
 		StaticModelData mData;
-		Framework::Effect mEffect;
+		Framework::Effect::Effect mEffect;
 		float mScale;
 		D3DXCOLOR mTintColor;
 

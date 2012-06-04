@@ -5,6 +5,7 @@
 #include <Helper\Camera.hpp>
 #include <Resources\ModelObj.hpp>
 #include <CameraController.hpp>
+#include <Ground.hpp>
 
 class Project : public Framework::Game
 {
@@ -41,6 +42,7 @@ private:
 	Helper::Camera mCamera;
 	CameraController* mCameraController;
 	Resources::ModelObj mModel;
+	Ground mGround;
 };
 
 #endif

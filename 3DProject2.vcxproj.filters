@@ -78,12 +78,16 @@
     <ClCompile Include="Code\CameraController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Code\Ground.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
     <None Include="push.sh" />
     <None Include="pull.sh" />
     <None Include="Resources\Effects\ModelObj.fx" />
+    <None Include="Resources\Effects\Ground.fx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Code\Framework\Effect\Effect.hpp">
@@ -153,6 +157,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Code\CameraController.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Code\Ground.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
