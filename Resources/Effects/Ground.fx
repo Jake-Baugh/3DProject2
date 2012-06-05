@@ -1,19 +1,22 @@
 struct VS_INPUT
 {
-	float3		position	: POSITION;
+	float3		positionW	: POSITION;
 	float2		uv			: TEXCOORD;
 };
 
 struct PS_INPUT
 {
-	float4		position	: SV_POSITION;
+	float4		positionH	: SV_POSITION;
+	float4		positionW	: POSITION;
 	float2		uv			: TEXCOORD;
 };
 
 struct PS_OUTPUT
 {
 	float4		color		: SV_TARGET0;
-	float4		normal		: SV_TARGET1;
+	float4		position	: SV_TARGET1;
+	float4		material	: SV_TARGET2;
+	float4		normal		: SV_TARGET3;
 };
 
 
@@ -52,7 +55,8 @@ PS_INPUT VS(VS_INPUT input)
 {
 	PS_INPUT output;
 
-	output.position = mul(float4(input.position, 1.0), gMVP);
+	output.positionH = mul(float4(input.position, 1.0), gMVP);
+	output.positionW = input.positionW;
 	output.uv = input.uv;
 
 	return output;
@@ -63,6 +67,8 @@ PS_OUTPUT PS(PS_INPUT input)
 	PS_OUTPUT output;
 
 	output.color = gModelTexture.Sample(linearSampler, input.uv);
+	output.position = input.positionW;
+	//output.material = float4(1.0,
 	output.normal = float4(0.0f, 1.0f, 0.0f, 0.0f);
 
 	return output;

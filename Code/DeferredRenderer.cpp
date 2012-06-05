@@ -7,18 +7,34 @@ DeferredRenderer::DeferredRenderer(Framework::D3DContext* d3dContext, int width,
 	, mWidth(width)
 	, mHeight(height)
 {
+	// Create the target buffer
+	mTargetBuffer = CreateTexture(DXGI_FORMAT_R32G32B32A32_FLOAT, D3D10_BIND_RENDER_TARGET);
+
 	// Create the G buffers
 	mColorBuffer = CreateTexture(DXGI_FORMAT_R32G32B32A32_FLOAT, D3D10_BIND_RENDER_TARGET);
+	mPositionBuffer = CreateTexture(DXGI_FORMAT_R32G32B32A32_FLOAT, D3D10_BIND_RENDER_TARGET);
 	mNormalBuffer = CreateTexture(DXGI_FORMAT_R32G32B32A32_FLOAT, D3D10_BIND_RENDER_TARGET);
+	mMaterialBuffer = CreateTexture(DXGI_FORMAT_R32G32B32A32_FLOAT, D3D10_BIND_RENDER_TARGET);
 	mDepthStencilBuffer = CreateTexture(DXGI_FORMAT_R32_TYPELESS, D3D10_BIND_DEPTH_STENCIL);
 
-	// Create the render target views and put them into an array
+	mGBuffers.push_back(mColorBuffer);
+	mGBuffers.push_back(mPositionBuffer);
+	mGBuffers.push_back(mNormalBuffer);
+	mGBuffers.push_back(mMaterialBuffer);
+	mGBuffers.push_back(mDepthStencilBuffer);
+
+
+	// Create the render target views
+	mTargetView = CreateRenderTargetView(mTargetBuffer);
 	mColorView = CreateRenderTargetView(mColorBuffer);
+	mPositionView = CreateRenderTargetView(mPositionBuffer);
 	mNormalView = CreateRenderTargetView(mNormalBuffer);
+	mMaterialView = CreateRenderTargetView(mMaterialBuffer);
 
 	mRenderTargets.push_back(mColorView);
+	mRenderTargets.push_back(mPositionView);
 	mRenderTargets.push_back(mNormalView);
-
+	mRenderTargets.push_back(mMaterialView);
 
 	// Create depth stencil view
 	D3D10_DEPTH_STENCIL_VIEW_DESC depthStencilViewDescription;
@@ -30,26 +46,60 @@ DeferredRenderer::DeferredRenderer(Framework::D3DContext* d3dContext, int width,
 	if (FAILED(result))
 		throw r2ExceptionRuntimeM("Failed to create G depth stencil view");
 
+
 	// Create the shader resource views
+	mTargetSRV = CreateShaderResourceView(mTargetBuffer, DXGI_FORMAT_R32G32B32A32_FLOAT);
 	mColorSRV = CreateShaderResourceView(mColorBuffer, DXGI_FORMAT_R32G32B32A32_FLOAT);
+	mPositionSRV = CreateShaderResourceView(mPositionBuffer, DXGI_FORMAT_R32G32B32A32_FLOAT);
 	mNormalSRV = CreateShaderResourceView(mNormalBuffer, DXGI_FORMAT_R32G32B32A32_FLOAT);
+	mMaterialSRV = CreateShaderResourceView(mMaterialBuffer, DXGI_FORMAT_R32G32B32A32_FLOAT);
 	mDepthStencilSRV = CreateShaderResourceView(mDepthStencilBuffer, DXGI_FORMAT_R32_FLOAT);
+
+	mShaderResourceViews.push_back(mColorSRV);
+	mShaderResourceViews.push_back(mPositionSRV);
+	mShaderResourceViews.push_back(mNormalSRV);
+	mShaderResourceViews.push_back(mMaterialSRV);
+	mShaderResourceViews.push_back(mDepthStencilSRV);
 }
 
 DeferredRenderer::~DeferredRenderer() throw()
 {
+	SafeRelease(mTargetBuffer);
+	SafeRelease(mTargetView);
+	SafeRelease(mTargetSRV);
+
 	SafeRelease(mColorBuffer);
 	SafeRelease(mColorView);
 	SafeRelease(mColorSRV);
+
+	SafeRelease(mPositionBuffer);
+	SafeRelease(mPositionView);
+	SafeRelease(mPositionSRV);
 
 	SafeRelease(mNormalBuffer);
 	SafeRelease(mNormalView);
 	SafeRelease(mNormalSRV);
 
+	SafeRelease(mMaterialBuffer);
+	SafeRelease(mMaterialView);
+	SafeRelease(mMaterialSRV);
+
 	SafeRelease(mDepthStencilBuffer);
 	SafeRelease(mDepthStencilView);
 	SafeRelease(mDepthStencilSRV);
 }
+
+
+void DeferredRenderer::AddDirectionalLight(LightID id, const DirectionalLight& light)
+{
+	mDirectionalLights[id] = light;
+}
+
+void DeferredRenderer::AddPointLight(LightID id, const PointLight& light)
+{
+	mPointLights[id] = light;
+}
+
 
 void DeferredRenderer::BeginDeferredState()
 {
@@ -66,6 +116,31 @@ void DeferredRenderer::EndDeferredState()
 {
 	mD3DContext->ResetRenderTarget();
 }
+
+void DeferredRenderer::ApplyLightingPhase()
+{
+	ID3D10ShaderResourceView* nullSRV = NULL;
+	mDevice->PSSetShaderResources(0, 1, &nullSRV);
+
+	mDevice->OMSetRenderTargets(1, &mTargetView, NULL);
+	mDevice->ClearRenderTargetView(mTargetView, D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
+
+
+	ID3D10RenderTargetView* currentRT = mTargetView;
+
+	for (std::map<LightID, DirectionalLight>::iterator it = mDirectionalLights.begin(); it != mDirectionalLights.end(); ++it)
+	{
+		ApplyDirectionalLight(it->second);
+	}
+
+	/*
+	for (std::map<LightID, PointLight>::iterator it = mPointLights.begin(); it != mPointLights.end(); ++it)
+	{
+		ApplyPointLight(it->second);
+	}
+	*/
+}
+
 
 ID3D10Texture2D* DeferredRenderer::CreateTexture(DXGI_FORMAT format, UINT bindFlags) const
 {
@@ -122,4 +197,15 @@ ID3D10ShaderResourceView* DeferredRenderer::CreateShaderResourceView(ID3D10Textu
 		throw r2ExceptionRuntimeM("Failed to create G shader resource view");
 
 	return result;
+}
+
+
+void DeferredRenderer::ApplyDirectionalLight(const DirectionalLight& light)
+{
+	
+}
+
+void DeferredRenderer::ApplyPointLight(const PointLight& light)
+{
+
 }

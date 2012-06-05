@@ -87,11 +87,14 @@ void Project::Draw(float dt)
 {
 	// Deferred stage
 	mDeferredRenderer.BeginDeferredState();
+
 	mGround.Draw(mCamera);
+
 	mDeferredRenderer.EndDeferredState();
 
 
 	// Render G buffer
+	/*
 	D3DXMATRIX mvp;
 	D3DXMatrixIdentity(&mvp);
 
@@ -106,8 +109,9 @@ void Project::Draw(float dt)
 		mEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mD3DContext.GetDevice());
 		mD3DContext.GetDevice()->Draw(mVertexBuffer.GetElementCount(), 0);
 	}
+	*/
 
 	// Unbind G buffer
-	mEffect.SetVariable("gTexture", NULL);
-	mEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Apply(mD3DContext.GetDevice());
+	//mEffect.SetVariable("gTexture", NULL);
+	//mEffect.GetTechniqueByIndex(0).GetPassByIndex(0).Apply(mD3DContext.GetDevice());
 }

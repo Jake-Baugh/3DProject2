@@ -55,14 +55,14 @@ PS_INPUT VS(VS_INPUT input)
 
 float4 PS(PS_INPUT input) : SV_TARGET0
 {
-	/*
 	float depth = gTexture.Sample(linearSampler, input.uv);
-	depth = gNear / (depth - gFar);
+	//depth = gNear / (depth - gFar);
+	depth = pow(depth, 50);
 
 	return float4(depth, depth, depth, 1.0f);
-	*/
+	
 
-	return gTexture.Sample(linearSampler, input.uv);
+	//return gTexture.Sample(linearSampler, input.uv);
 }
 
 
