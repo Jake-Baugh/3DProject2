@@ -60,9 +60,6 @@
     <ClCompile Include="Code\Helper\r2tk\r2-exception.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Code\Helper\Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Code\Helper\GameFont.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -72,16 +69,22 @@
     <ClCompile Include="Code\Project.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Code\CircleCameraController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Code\CameraController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Code\Ground.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Code\DeferredRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Code\Camera\CameraController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Code\Camera\CircleCameraController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Code\Camera\FreeCameraController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Code\Camera\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -92,6 +95,7 @@
     <None Include="Resources\Effects\ModelObj.fx" />
     <None Include="Resources\Effects\Ground.fx" />
     <None Include="Resources\Effects\Quad2D.fx" />
+    <None Include="Resources\Effects\Light.fx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Code\Framework\Effect\Effect.hpp">
@@ -142,9 +146,6 @@
     <ClInclude Include="Code\Helper\r2tk\r2-singleton.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Code\Helper\Camera.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Code\Helper\GameFont.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -157,16 +158,22 @@
     <ClInclude Include="Code\Project.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Code\CircleCameraController.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Code\CameraController.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Code\Ground.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Code\DeferredRenderer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Code\Camera\CameraController.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Code\Camera\CircleCameraController.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Code\Camera\FreeCameraController.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Code\Camera\Camera.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

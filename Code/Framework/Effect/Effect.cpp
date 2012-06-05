@@ -164,5 +164,15 @@ namespace Framework
 		{
 			mEffect->GetVariableByName(variableName.c_str())->AsShaderResource()->SetResource(value);
 		}
+
+		void Effect::SetVariable(const std::string& variableName, unsigned int elementSize, unsigned int elementCount, void* data)
+		{
+			mEffect->GetVariableByName(variableName.c_str())->SetRawValue(data, elementSize, elementCount);
+		}
+
+		ID3D10EffectVariable* Effect::GetVariable(const std::string& variableName)
+		{
+			return mEffect->GetVariableByName(variableName.c_str());
+		}
 	}
 }

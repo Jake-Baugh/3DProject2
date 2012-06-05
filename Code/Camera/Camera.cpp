@@ -1,6 +1,6 @@
-#include <Helper\Camera.hpp>
+#include <Camera\Camera.hpp>
 
-namespace Helper
+namespace Camera
 {
 	const D3DXVECTOR3 Camera::C_WORLD_UP(0, 1, 0);
 
@@ -65,8 +65,44 @@ namespace Helper
 
 	void Camera::Commit()
 	{
-		D3DXVec3Normalize(&mStagingChanges.Direction, &mStagingChanges.Direction);
+		D3DXVECTOR3 x;
+		D3DXVECTOR3 y;
+		D3DXVECTOR3 z = mStagingChanges.Direction;
+		
+		D3DXVec3Cross(&x, &C_WORLD_UP, &z);
+		D3DXVec3Cross(&y, &z, &x);
 
+		D3DXVec3Normalize(&x, &x);
+		D3DXVec3Normalize(&y, &y);
+		D3DXVec3Normalize(&z, &z);
+
+
+		mView.m[0][0] = x.x;
+		mView.m[1][0] = x.y;
+		mView.m[2][0] = x.z;
+		mView.m[3][0] = -D3DXVec3Dot(&x, &mStagingChanges.Position);
+
+		mView.m[0][1] = y.x;
+		mView.m[1][1] = y.y;
+		mView.m[2][1] = y.z;
+		mView.m[3][1] = -D3DXVec3Dot(&y, &mStagingChanges.Position);
+
+		mView.m[0][2] = z.x;
+		mView.m[1][2] = z.y;
+		mView.m[2][2] = z.z;
+		mView.m[3][2] = -D3DXVec3Dot(&z, &mStagingChanges.Position);
+
+		mView.m[0][3] = 0.0f;
+		mView.m[1][3] = 0.0f;
+		mView.m[2][3] = 0.0f;
+		mView.m[3][3] = 1.0f;
+
+
+		mViewProjection = mView * mProjection;
+
+		/*
+		D3DXVec3Normalize(&mStagingChanges.Direction, &mStagingChanges.Direction);
+		
 		// calculate view matrix here!
 		D3DXVECTOR3 right;
 		D3DXVECTOR3 up;
@@ -94,5 +130,6 @@ namespace Helper
 		mView.m[3][3] = 1;		
 
 		mViewProjection = mView * mProjection;
+		*/
 	}
 }

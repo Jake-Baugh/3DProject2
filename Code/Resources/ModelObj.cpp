@@ -29,7 +29,7 @@ namespace Resources
 		mData.VertexData.Bind(slot);
 	}
 
-	void ModelObj::Draw(const D3DXVECTOR3& drawPosition, const Helper::Camera& camera)
+	void ModelObj::Draw(const D3DXVECTOR3& drawPosition, const Camera::Camera& camera)
 	{
 		// Calculate the world matrix. Use worldViewProjection as temporary storage. Think green.
 		D3DXMATRIX world;
@@ -41,13 +41,13 @@ namespace Resources
 		// Calculate the REAL worldViewProjection.
 		worldViewProjection = world * camera.GetViewProjection();
 
-		mEffect.SetVariable("g_matWorld", world);
-		mEffect.SetVariable("g_matWVP", worldViewProjection);
-		mEffect.SetVariable("g_modelTintColor", static_cast<D3DXVECTOR4>(mTintColor));
-		mEffect.SetVariable("g_modelTexture", mData.MaterialData->GetMaterial(mData.MaterialName)->MainTexture->GetShaderResourceView());
-		
-		// DEBUG: get light position elsewhere
-		mEffect.SetVariable("g_lightDirection", D3DXVECTOR4(50, 50, 0, 0));
+		mEffect.SetVariable("gWorld", world);
+		mEffect.SetVariable("gMVP", worldViewProjection);
+		mEffect.SetVariable("gTexture", mData.MaterialData->GetMaterial(mData.MaterialName)->MainTexture->GetShaderResourceView());
+		mEffect.SetVariable("Ka", mData.MaterialData->GetMaterial(mData.MaterialName)->Ambient.x);
+		mEffect.SetVariable("Kd", mData.MaterialData->GetMaterial(mData.MaterialName)->Diffuse.x);
+		mEffect.SetVariable("Ks", mData.MaterialData->GetMaterial(mData.MaterialName)->Specular.x);
+		mEffect.SetVariable("A", mData.MaterialData->GetMaterial(mData.MaterialName)->SpecularExp);
 
 		// Draw the buffer, once for each pass
 		for(UINT p = 0; p < mEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)
@@ -57,20 +57,20 @@ namespace Resources
 		}
 	}
 
-	void ModelObj::Draw(const D3DXMATRIX& modelMatrix, const Helper::Camera& camera)
+	void ModelObj::Draw(const D3DXMATRIX& modelMatrix, const Camera::Camera& camera)
 	{
 		D3DXMATRIX worldViewProjection;
 
 		// Calculate the REAL worldViewProjection.
 		worldViewProjection = modelMatrix * camera.GetViewProjection();
 
-		mEffect.SetVariable("g_matWorld", modelMatrix);
-		mEffect.SetVariable("g_matWVP", worldViewProjection);
-		mEffect.SetVariable("g_modelTintColor", static_cast<D3DXVECTOR4>(mTintColor));
-		mEffect.SetVariable("g_modelTexture", mData.MaterialData->GetMaterial(mData.MaterialName)->MainTexture->GetShaderResourceView());
-
-		// DEBUG: get light position elsewhere
-		mEffect.SetVariable("g_lightDirection", D3DXVECTOR4(50, 50, 0, 0));
+		mEffect.SetVariable("gWorld", modelMatrix);
+		mEffect.SetVariable("gMVP", worldViewProjection);
+		mEffect.SetVariable("gTexture", mData.MaterialData->GetMaterial(mData.MaterialName)->MainTexture->GetShaderResourceView());
+		mEffect.SetVariable("Ka", mData.MaterialData->GetMaterial(mData.MaterialName)->Ambient.x);
+		mEffect.SetVariable("Kd", mData.MaterialData->GetMaterial(mData.MaterialName)->Diffuse.x);
+		mEffect.SetVariable("Ks", mData.MaterialData->GetMaterial(mData.MaterialName)->Specular.x);
+		mEffect.SetVariable("A", mData.MaterialData->GetMaterial(mData.MaterialName)->SpecularExp);
 
 		// Draw the buffer, once for each pass
 		for(UINT p = 0; p < mEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)

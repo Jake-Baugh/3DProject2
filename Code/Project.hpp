@@ -2,9 +2,9 @@
 #define PROJECT_HPP
 
 #include <Framework\Game.hpp>
-#include <Helper\Camera.hpp>
+#include <Camera\Camera.hpp>
 #include <Resources\ModelObj.hpp>
-#include <CameraController.hpp>
+#include <Camera\CameraController.hpp>
 #include <Ground.hpp>
 #include <DeferredRenderer.hpp>
 
@@ -40,8 +40,8 @@ private:
 		ProjectionDescription(unsigned int clientWidth, unsigned int clientHeight);
 	};
 
-	Helper::Camera mCamera;
-	CameraController* mCameraController;
+	Camera::Camera mCamera;
+	Camera::CameraController* mCameraController;
 
 	DeferredRenderer mDeferredRenderer;
 	Resources::ModelObj mModel;

@@ -32,22 +32,15 @@ DepthStencilState EnableDepth
 
 
 
-cbuffer cbEveryFrame
-{
-	matrix gMVP;
-};
 
 Texture2D gTexture;
-float gNear;
-float gFar;
-
 
 
 PS_INPUT VS(VS_INPUT input)
 {
 	PS_INPUT output;
 
-	output.position = mul(float4(float3(input.position, 0.0f), 1.0), gMVP);
+	output.position = float4(float3(input.position, 0.0f), 1.0);
 	output.uv = input.uv;
 
 	return output;
@@ -55,14 +48,14 @@ PS_INPUT VS(VS_INPUT input)
 
 float4 PS(PS_INPUT input) : SV_TARGET0
 {
-	float depth = gTexture.Sample(linearSampler, input.uv);
+	//float depth = gTexture.Sample(linearSampler, input.uv);
 	//depth = gNear / (depth - gFar);
-	depth = pow(depth, 50);
+	//depth = pow(depth, 50);
 
-	return float4(depth, depth, depth, 1.0f);
+	//return float4(depth, depth, depth, 1.0f);
 	
 
-	//return gTexture.Sample(linearSampler, input.uv);
+	return gTexture.Sample(linearSampler, input.uv);
 }
 
 

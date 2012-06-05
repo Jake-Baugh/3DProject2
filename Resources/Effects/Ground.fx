@@ -1,13 +1,13 @@
 struct VS_INPUT
 {
-	float3		positionW	: POSITION;
+	float3		positionL	: POSITION;
 	float2		uv			: TEXCOORD;
 };
 
 struct PS_INPUT
 {
 	float4		positionH	: SV_POSITION;
-	float4		positionW	: POSITION;
+	float3		positionW	: POSITION;
 	float2		uv			: TEXCOORD;
 };
 
@@ -44,19 +44,24 @@ DepthStencilState EnableDepth
 
 cbuffer cbEveryFrame
 {
-	matrix	gMVP;
+	matrix gMVP;
+	matrix gModel;
 };
 
 Texture2D gModelTexture;
 
+float Ka = 1.0;
+float Kd = 1.0;
+float Ks = 1.0;
+float A = 1.0;
 
 
 PS_INPUT VS(VS_INPUT input)
 {
 	PS_INPUT output;
 
-	output.positionH = mul(float4(input.position, 1.0), gMVP);
-	output.positionW = input.positionW;
+	output.positionH = mul(float4(input.positionL, 1.0), gMVP);
+	output.positionW = mul(float4(input.positionL, 1.0), gModel);
 	output.uv = input.uv;
 
 	return output;
@@ -67,9 +72,9 @@ PS_OUTPUT PS(PS_INPUT input)
 	PS_OUTPUT output;
 
 	output.color = gModelTexture.Sample(linearSampler, input.uv);
-	output.position = input.positionW;
-	//output.material = float4(1.0,
-	output.normal = float4(0.0f, 1.0f, 0.0f, 0.0f);
+	output.position = float4(input.positionW, 1.0);
+	output.material = float4(Ka, Kd, Ks, A);
+	output.normal = float4(0.0f, 1.0f, 0.0f, 1.0f);
 
 	return output;
 }

@@ -42,7 +42,8 @@ namespace Framework
 			void SetVariable(const std::string& variableName, const D3DXVECTOR2& value);
 			void SetVariable(const std::string& variableName, const D3DXMATRIX& value);
 			void SetVariable(const std::string& variableName, ID3D10ShaderResourceView* value);
-
+			void SetVariable(const std::string& variableName, unsigned int elementSize, unsigned int elementCount, void* data);
+			ID3D10EffectVariable* GetVariable(const std::string& variableName);
 		private:
 			ID3D10Device* mDevice;
 			ID3D10Effect* mEffect;

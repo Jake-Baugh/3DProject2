@@ -3,7 +3,7 @@
 
 #include <Helper\Primitives.hpp>
 
-namespace Helper
+namespace Camera
 {
 	class Camera
 	{

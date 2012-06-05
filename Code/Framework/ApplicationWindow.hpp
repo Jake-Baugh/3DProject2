@@ -22,7 +22,15 @@ namespace Framework
 		virtual void CharEntered(ApplicationWindow* window, char character) {}
 	};
 
+	struct InputState
+	{
+		struct Keyboard
+		{
+			Keyboard();
 
+			bool Keys[256];
+		} Keyboard;
+	};
 
 	// Defines a main application window
 	class ApplicationWindow
@@ -59,6 +67,8 @@ namespace Framework
 		unsigned int GetClientHeight() const;
 		HWND GetHandle() const;
 		int GetExitValue() const;
+		const InputState& GetCurrentInput() const;
+		const InputState& GetPreviousInput() const;
 
 		// Process all messages currently in the message queue
 		bool ProcessMessages();
@@ -74,6 +84,8 @@ namespace Framework
 		RECT mWindowRect;
 		NotificationSubscriberVector mNotificationSubscribers;
 		int mExitValue;
+		InputState mCurrentInput;
+		InputState mPreviousInput;
 
 		// The static WndProc. Forwards all messages to the proper ApplicationWindow class.
 		static LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam);

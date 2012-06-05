@@ -1,5 +1,6 @@
 #include <Project.hpp>
-#include <CircleCameraController.hpp>
+#include <Camera\CircleCameraController.hpp>
+#include <Camera\FreeCameraController.hpp>
 
 Project::WindowDescription::WindowDescription()
 {
@@ -25,12 +26,11 @@ Project::ProjectionDescription::ProjectionDescription(unsigned int clientWidth, 
 
 Project::Project(HINSTANCE instance)
 	: Game(instance, WindowDescription().Description, ContextDescription().Description)
-	, mCamera(ProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight()).Frustum.CreatePerspectiveProjection(), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f))
-	, mCameraController(new CircleCameraController(&mCamera, D3DXVECTOR3(0, 0, 0), 15.0f, 2.0f))
+	, mCamera(ProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight()).Frustum.CreatePerspectiveProjection(), D3DXVECTOR3(0.0f, 30.0f, -20.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f))
+	, mCameraController(new Camera::FreeCameraController(&mCamera))
 	, mDeferredRenderer(&mD3DContext, 1024, 768)
 	, mModel(mD3DContext.GetDevice(), "Pacman2.obj")
 	, mGround(mD3DContext.GetDevice())
-
 	, mVertexBuffer(mD3DContext.GetDevice())
 	, mEffect(mD3DContext.GetDevice(), "Resources/Effects/Quad2D.fx")
 {
@@ -60,6 +60,46 @@ Project::Project(HINSTANCE instance)
 	inputLayout.push_back(Framework::Effect::InputLayoutElement("TEXCOORD", DXGI_FORMAT_R32G32_FLOAT));
 
 	mEffect.GetTechniqueByIndex(0).GetPassByIndex(0).SetInputLayout(inputLayout);
+
+	DirectionalLight dl;
+	dl.Direction = D3DXVECTOR4(0.0, -1.0, 0.0, 0.0f);
+	dl.Intensity = D3DXVECTOR4(0.5f, 0.5f, 0.5f, 0.0f);
+
+	mDeferredRenderer.SetDirectionalLight(dl);
+	mDeferredRenderer.SetAmbientLight(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+	
+	/*
+	PointLight p1;
+	p1.Position =  D3DXVECTOR4(0.0f, 10.0f, 0.0f, 1.0f);
+	p1.Intensity = D3DXVECTOR3(0.0f, 0.5f, 0.0f);
+	p1.Radius = 20.0f;
+
+	mDeferredRenderer.AddPointLight(p1);
+
+	PointLight p2;
+	p2.Position =  D3DXVECTOR4(10.0f, 10.0f, 10.0f, 1.0f);
+	p2.Intensity = D3DXVECTOR3(0.5f, 0.0f, 0.5f);
+	p2.Radius = 20.0f;
+
+	mDeferredRenderer.AddPointLight(p2);
+	*/
+	
+	
+	float radius = 20;
+	D3DXVECTOR3 intensities[] = { D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR3(1.0f, 0.0f, 1.0f) };
+	int pointLightCount = sizeof(intensities) / sizeof(intensities[0]);
+	for (int i = 0; i < pointLightCount; ++i)
+	{
+		double phi = 2.0 * D3DX_PI / pointLightCount;
+		
+		PointLight light;
+		light.Position = D3DXVECTOR4(radius * cos(i * phi), 2.0f, radius * sin(i * phi), 1.0f);
+		light.Intensity = intensities[i];
+		light.Radius = 20.0f;
+
+		mDeferredRenderer.AddPointLight(light);
+	}
+	
 }
 
 Project::~Project() throw()
@@ -79,7 +119,7 @@ void Project::KeyPressed(Framework::ApplicationWindow* window, int keyCode)
 
 void Project::Update(float dt)
 {
-	mCameraController->Update(dt);
+	mCameraController->Update(dt, mWindow.GetCurrentInput(), mWindow.GetPreviousInput());
 	mCamera.Commit();
 }
 
@@ -87,21 +127,17 @@ void Project::Draw(float dt)
 {
 	// Deferred stage
 	mDeferredRenderer.BeginDeferredState();
-
 	mGround.Draw(mCamera);
 
+	mModel.Bind();
+	mModel.Draw(D3DXVECTOR3(0.0f, 1.0f, 0.0f), mCamera);
 	mDeferredRenderer.EndDeferredState();
+	mDeferredRenderer.ApplyLightingPhase(mCamera);
 
 
 	// Render G buffer
-	/*
-	D3DXMATRIX mvp;
-	D3DXMatrixIdentity(&mvp);
-
-	mEffect.SetVariable("gMVP", mvp);
-	mEffect.SetVariable("gTexture", mDeferredRenderer.mDepthStencilSRV);
-	mEffect.SetVariable("gNear", 1.0f);
-	mEffect.SetVariable("gFar", 1000.0f);
+	mEffect.SetVariable("gTexture", mDeferredRenderer.GetFinalComposition());
+	//mEffect.SetVariable("gTexture", mDeferredRenderer.mPositionSRV);
 
 	mVertexBuffer.Bind();
 	for (unsigned int p = 0; p < mEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)
@@ -109,7 +145,6 @@ void Project::Draw(float dt)
 		mEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mD3DContext.GetDevice());
 		mD3DContext.GetDevice()->Draw(mVertexBuffer.GetElementCount(), 0);
 	}
-	*/
 
 	// Unbind G buffer
 	//mEffect.SetVariable("gTexture", NULL);
