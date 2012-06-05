@@ -2,7 +2,10 @@
 #define PROJECT_HPP
 
 #include <Framework\Game.hpp>
+#include <Framework\VertexBuffer.hpp>
+#include <Framework\Effect\Effect.hpp>
 #include <Helper\Camera.hpp>
+#include <Helper\BezierCurve.hpp>
 #include <Resources\ModelObj.hpp>
 #include <CameraController.hpp>
 #include <Ground.hpp>
@@ -39,6 +42,9 @@ private:
 		ProjectionDescription(unsigned int clientWidth, unsigned int clientHeight);
 	};
 
+	BezierCurve mCurve;
+	Framework::VertexBuffer mCurveBuffer;
+	Framework::Effect::Effect mCurveEffect;
 	Helper::Camera mCamera;
 	CameraController* mCameraController;
 	Resources::ModelObj mModel;
