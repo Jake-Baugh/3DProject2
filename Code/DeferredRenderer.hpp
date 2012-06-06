@@ -25,7 +25,12 @@ struct PointLight
 class DeferredRenderer 
 {
 public:
-	typedef int LightID;
+	static const int C_GBUFFER_COLOR;
+	static const int C_GBUFFER_POSITION;
+	static const int C_GBUFFER_NORMAL;
+	static const int C_GBUFFER_MATERIAL;
+	static const int C_GBUFFER_DEPTH;
+	
 
 	DeferredRenderer(Framework::D3DContext* d3dContext, int width, int height);
 	~DeferredRenderer() throw();
@@ -38,7 +43,16 @@ public:
 	void EndDeferredState();
 	void ApplyLightingPhase(const Camera::Camera& camera);
 
-	ID3D10ShaderResourceView* GetFinalComposition();
+	void RenderFinalComposition();
+	void RenderBuffer(ID3D10ShaderResourceView* buffer);
+
+	ID3D10ShaderResourceView* GetFinalComposition() const;
+	ID3D10ShaderResourceView* GetColorBuffer() const;
+	ID3D10ShaderResourceView* GetPositionBuffer() const;
+	ID3D10ShaderResourceView* GetNormalBuffer() const;
+	ID3D10ShaderResourceView* GetMaterialBuffer() const;
+	ID3D10ShaderResourceView* GetDepthStencilBuffer() const;
+	ID3D10ShaderResourceView* GetGBufferByIndex(unsigned int index) const;
 private:
 	struct QuadVertex
 	{
@@ -55,10 +69,8 @@ private:
 	ID3D10Device* mDevice;
 	int mWidth;
 	int mHeight;
-	//int mColorBufferToRead;
-public:
+
 	// The buffers holding the G-buffer data.
-	//ID3D10Texture2D* mColorBuffer[2];
 	ID3D10Texture2D* mTargetBuffer;
 	ID3D10Texture2D* mColorBuffer;
 	ID3D10Texture2D* mPositionBuffer;
@@ -67,7 +79,6 @@ public:
 	ID3D10Texture2D* mDepthStencilBuffer;
 
 	// Render/Depth views for rendering to the buffers
-	//ID3D10RenderTargetView* mColorView[2];
 	ID3D10RenderTargetView* mTargetView;
 	ID3D10RenderTargetView* mColorView;
 	ID3D10RenderTargetView* mPositionView;
@@ -76,7 +87,6 @@ public:
 	ID3D10DepthStencilView* mDepthStencilView;
 
 	// Shader resource views for reading from the buffers
-	//ID3D10ShaderResourceView* mColorSRV[2];
 	ID3D10ShaderResourceView* mTargetSRV;
 	ID3D10ShaderResourceView* mColorSRV;
 	ID3D10ShaderResourceView* mPositionSRV;
@@ -94,13 +104,16 @@ public:
 	std::vector<ID3D10ShaderResourceView*> mShaderResourceViews;
 
 
-	// Maps ID to lights
+	// Keeps track of the lights in the scene
+	D3DXVECTOR3 mAmbientLight;
 	DirectionalLight mDirectionalLight;
 	std::vector<PointLight> mPointLights;
-	D3DXVECTOR3 mAmbientLight;
 
+	// The shader for the lighting pass, is applied to a fullscreen quad.
 	Framework::Effect::Effect mLightEffect;
-	//Framework::Effect::Effect mPointLightEffect;
+
+	// The shader for rendering a G buffer to the screen
+	Framework::Effect::Effect mBufferEffect;
 
 	Framework::VertexBuffer mFullscreenQuad;
 };

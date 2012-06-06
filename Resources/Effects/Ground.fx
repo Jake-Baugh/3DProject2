@@ -15,8 +15,8 @@ struct PS_OUTPUT
 {
 	float4		color		: SV_TARGET0;
 	float4		position	: SV_TARGET1;
-	float4		material	: SV_TARGET2;
-	float4		normal		: SV_TARGET3;
+	float4		normal		: SV_TARGET2;
+	float4		material	: SV_TARGET3;
 };
 
 
@@ -73,8 +73,8 @@ PS_OUTPUT PS(PS_INPUT input)
 
 	output.color = gModelTexture.Sample(linearSampler, input.uv);
 	output.position = float4(input.positionW, 1.0);
-	output.material = float4(Ka, Kd, Ks, A);
 	output.normal = float4(0.0f, 1.0f, 0.0f, 1.0f);
+	output.material = float4(Ka, Kd, Ks, A);
 
 	return output;
 }

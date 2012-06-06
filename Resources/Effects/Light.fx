@@ -2,7 +2,8 @@
 	File: Light.fx
 	Created on: 2012-06-05
 
-	This shader will apply a directional light to a deferred scene by rendering a full-screen quad.
+	This shader will apply a directional light and an array of point lights
+    to a deferred scene by rendering a full-screen quad.
 */
 
 
@@ -141,11 +142,11 @@ float4 PS(PS_INPUT input) : SV_TARGET0
 	float2 Diffuse = float2(0, 0);
 	float Specular = 0;
 	
-	//Diffuse = Fa(dot(normalW, -gDirectionalLight.DirectionW.xyz));
-	//Specular = Fb(dot(normalW, normalize(normalW - gDirectionalLight.DirectionW.xyz)), material.w);
-	//color += albedo * Diffuse.x * gDirectionalLight.Intensity * material.y;
-	//color += Specular * gDirectionalLight.Intensity * Diffuse.y * material.z;
-
+	Diffuse = Fa(dot(normalW, -gDirectionalLight.DirectionW.xyz));
+	Specular = Fb(dot(normalW, normalize(normalW - gDirectionalLight.DirectionW.xyz)), material.w);
+	color += albedo * Diffuse.x * gDirectionalLight.Intensity * material.y;
+	color += Specular * gDirectionalLight.Intensity * Diffuse.y * material.z;
+	
 	for (int i = 0; i < gPointLightCount; ++i)
 	{
 		float3 lightW = gPointLights[i].PositionW.xyz - posW;

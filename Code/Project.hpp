@@ -44,17 +44,10 @@ private:
 	Camera::CameraController* mCameraController;
 
 	DeferredRenderer mDeferredRenderer;
+	int mBufferToRender;
+
 	Resources::ModelObj mModel;
 	Ground mGround;
-
-	struct QuadVertex
-	{
-		D3DXVECTOR2 Position;
-		D3DXVECTOR2 UV;
-	};
-
-	Framework::VertexBuffer mVertexBuffer;
-	Framework::Effect::Effect mEffect;
 };
 
 #endif
