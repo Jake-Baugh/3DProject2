@@ -176,7 +176,6 @@
     <None Include=".gitignore" />
     <None Include="pull.sh" />
     <None Include="push.sh" />
-<<<<<<< HEAD
     <None Include="Resources\Effects\Curve.fx" />
     <None Include="Resources\Effects\GBuffer.fx" />
     <None Include="Resources\Effects\Light.fx" />

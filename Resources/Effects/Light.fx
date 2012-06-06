@@ -34,7 +34,6 @@ struct PointLight
 };
 
 
-
 Texture2D gColorBuffer;
 Texture2D gPositionBuffer;
 Texture2D gNormalBuffer;

@@ -1,23 +1,35 @@
+/**
+	File: Quad2D.fx
+	Created on: 2012-06-04
+
+	Used to render a textured 2D quad onto the screen.
+*/
+
+
+/** Input Layouts & Global Variables */
 struct VS_INPUT
 {
-	float2		position	: POSITION;
-	float2		uv			: TEXCOORD;
+	float2 PositionH : POSITION;
+	float2 TexCoord	: TEXCOORD;
 };
 
 struct PS_INPUT
 {
-	float4		position	: SV_POSITION;
-	float2		uv			: TEXCOORD;
+	float4 PositionH : SV_POSITION;
+	float2 TexCoord : TEXCOORD;
 };
 
 
+Texture2D gTexture;
 
+
+/** Render states */
 RasterizerState NoCulling
 {
 	CullMode = None;
 };
 
-SamplerState linearSampler {
+SamplerState LinearSampler {
 	Filter = MIN_MAG_MIP_LINEAR;
 	AddressU = Wrap;
 	AddressV = Wrap;
@@ -30,26 +42,25 @@ DepthStencilState EnableDepth
 	DepthFunc = LESS_EQUAL;
 };
 
-Texture2D gTexture;
 
-
+/** Shader implementation */
 PS_INPUT VS(VS_INPUT input)
 {
 	PS_INPUT output;
 
-	output.position = float4(float3(input.position, 0.0f), 1.0);
-	output.uv = input.uv;
+	output.PositionH = float4(float3(input.PositionL, 0.0f), 1.0);
+	output.TexCoord = input.TexCoord;
 
 	return output;
 }
 
 float4 PS(PS_INPUT input) : SV_TARGET0
 {
-	return gTexture.Sample(linearSampler, input.uv);
+	return gTexture.Sample(LinearSampler, input.TexCoord);
 }
 
 
-
+/** Technique definitions */
 technique10 DrawTechnique
 {
 	pass P0

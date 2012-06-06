@@ -128,8 +128,18 @@ void Project::Update(float dt)
 
 void Project::Draw(float dt)
 {
-	/*
+	// Deferred stage
+	mDeferredRenderer.BeginDeferredState();
+
+	mGround.Draw(mCamera);
+	mModel.Bind();
+	mModel.Draw(D3DXVECTOR3(0.0f, 1.0f, 0.0f), mCamera);
+
+	D3DXMATRIX world;
+	D3DXMatrixIdentity(&world);
+
 	mCurveEffect.SetVariable("gMVP", mCamera.GetViewProjection());
+	mCurveEffect.SetVariable("gWorld", world);
 
 	mCurveBuffer.Bind();
 	for (unsigned int p = 0; p < mCurveEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)
@@ -137,14 +147,6 @@ void Project::Draw(float dt)
 		mCurveEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mD3DContext.GetDevice());
 		mD3DContext.GetDevice()->Draw(mCurveBuffer.GetElementCount(), 0);
 	}
-	*/
-	
-	// Deferred stage
-	mDeferredRenderer.BeginDeferredState();
-
-	mGround.Draw(mCamera);
-	mModel.Bind();
-	mModel.Draw(D3DXVECTOR3(0.0f, 1.0f, 0.0f), mCamera);
 
 	mDeferredRenderer.EndDeferredState();
 	mDeferredRenderer.ApplyLightingPhase(mCamera);
