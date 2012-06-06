@@ -57,9 +57,9 @@ PS_OUTPUT PS(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
-	output.Color = float4(1.0f, 0.0f, 0.0f, 1.0f);
-	output.PositionW = input.PositionW;
-	output.NormalW = float4(0.0f, 1.0f, 0.0f, 1.0f);
+	output.Color = float4(1.0f, 0.0f, 0.0f, 0.0f);
+	output.PositionW = float4(input.PositionW.xyz, 0.0f);
+	output.NormalW = float4(0.0f, 1.0f, 0.0f, 0.0f);
 	output.Material = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	return output;

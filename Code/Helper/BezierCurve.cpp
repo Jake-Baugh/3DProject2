@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cmath>
-#include "BezierCurve.hpp"
+#include <Helper\BezierCurve.hpp>
+#include <Helper\Global.hpp>
 
 BezierSegment::BezierSegment(const D3DXVECTOR3& start, const D3DXVECTOR3& point2, const D3DXVECTOR3& point3, const D3DXVECTOR3& end)
 {
@@ -20,7 +21,6 @@ BezierSegment::BezierSegment(const std::vector<D3DXVECTOR3>& points)
 
 D3DXVECTOR3 BezierSegment::GetPos(float t) const
 {
-	assert(t >= 0.0f && t <= 1.0f);
 	D3DXVECTOR3 result;
 	result = mPoints[0] * pow((1.0f - t), 3.0f);
 	result += mPoints[1] * 3 * t * pow((1.0f - t), 2.0f);
@@ -52,11 +52,13 @@ BezierCurve::BezierCurve(const std::vector<D3DXVECTOR3>& points)
 
 D3DXVECTOR3 BezierCurve::GetPos(float t) const
 {
+	//t = Clamp(t, 0.0f, GetLength());
+
 	int index = static_cast<int>(t);
 	float fractpart, intpart;
 	fractpart = modf(t, &intpart);
-	/*if (index == mSegments.size())
-		index--;*/
+	if (index >= mSegments.size())
+		return mSegments.back().GetPos(1.0f + fractpart);
 
 	return mSegments[index].GetPos(fractpart);
 }

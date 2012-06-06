@@ -12,9 +12,6 @@ public:
 
 	void Draw(const Camera::Camera& camera);
 
-	// DEBUG
-	void SetTexture(ID3D10ShaderResourceView* newTexture);
-
 	static const float C_HALFSIZE;
 
 private:

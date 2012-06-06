@@ -17,8 +17,8 @@ struct VS_INPUT
 struct PS_INPUT
 {
 	float4 PositionH : SV_POSITION;
-	float3 PositionW : POSITION;
-	float3 NormalW : NORMAL;
+	float4 PositionW : POSITION;
+	float4 NormalW : NORMAL;
 	float2 TexCoord : TEXCOORD;
 };
 
@@ -38,6 +38,7 @@ cbuffer cbEveryFrame
 };
 
 Texture2D gTexture;
+Texture2D gGlowMap;
 float Ka;
 float Kd;
 float Ks;
@@ -71,8 +72,8 @@ PS_INPUT VS(VS_INPUT input)
 	PS_INPUT output;
 
 	output.PositionH = mul(float4(input.PositionL, 1.0), gMVP);
-	output.PositionW = mul(float4(input.PositionL, 1.0), gWorld).xyz;
-	output.NormalW = mul(float4(input.NormalL, 0.0), gWorld).xyz;
+	output.PositionW = mul(float4(input.PositionL, 1.0), gWorld);
+	output.NormalW = mul(float4(input.NormalL, 0.0), gWorld);
 	output.TexCoord = input.TexCoord;
 
 	return output;
@@ -82,9 +83,11 @@ PS_OUTPUT PS(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
-	output.Color = gTexture.Sample(LinearSampler, input.TexCoord);
-	output.PositionW = float4(input.PositionW, 1.0f);
-	output.NormalW = float4(input.NormalW, 1.0f);
+	float3 glowColor = gGlowMap.Sample(LinearSampler, input.TexCoord).xyz;
+
+	output.Color = float4(gTexture.Sample(LinearSampler, input.TexCoord).xyz, glowColor.x);
+	output.PositionW = float4(input.PositionW.xyz, glowColor.y);
+	output.NormalW = float4(input.NormalW.xyz, glowColor.z);
 	output.Material = float4(Ka, Kd, Ks, A);
 
 	return output;

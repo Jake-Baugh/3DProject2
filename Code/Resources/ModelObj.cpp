@@ -9,12 +9,13 @@
 
 namespace Resources
 {
-	ModelObj::ModelObj(ID3D10Device* device, const std::string& filename)
+	ModelObj::ModelObj(ID3D10Device* device, const std::string& textureFilename, const std::string& glowmapFilename)
 		: mDevice(device)
 		, mEffect(device, "Resources/Effects/ModelObj.fx")
-		, mData(device, filename)
+		, mData(device, textureFilename)
 		, mScale(1.0f)
 		, mTintColor(D3DXCOLOR(1.0, 1.0, 1.0, 1.0))
+		, mGlowMap(NULL)
 	{
 		Framework::Effect::InputLayoutVector inputLayout;
 		inputLayout.push_back(Framework::Effect::InputLayoutElement("POSITION", DXGI_FORMAT_R32G32B32_FLOAT));
@@ -22,6 +23,20 @@ namespace Resources
 		inputLayout.push_back(Framework::Effect::InputLayoutElement("TEXCOORD", DXGI_FORMAT_R32G32_FLOAT));
 
 		mEffect.GetTechniqueByIndex(0).GetPassByIndex(0).SetInputLayout(inputLayout);
+
+		if (glowmapFilename.size() > 0)
+		{
+			mGlowMap = new Texture(mDevice, glowmapFilename);
+		}
+		else
+		{
+			mGlowMap = new Texture(mDevice, "blackPixel.png");		
+		}
+	}
+
+	ModelObj::~ModelObj() throw()
+	{
+		SafeDelete(mGlowMap);
 	}
 
 	void ModelObj::Bind(unsigned int slot)
@@ -44,6 +59,7 @@ namespace Resources
 		mEffect.SetVariable("gWorld", world);
 		mEffect.SetVariable("gMVP", worldViewProjection);
 		mEffect.SetVariable("gTexture", mData.MaterialData->GetMaterial(mData.MaterialName)->MainTexture->GetShaderResourceView());
+		mEffect.SetVariable("gGlowMap", mGlowMap->GetShaderResourceView());
 		mEffect.SetVariable("Ka", mData.MaterialData->GetMaterial(mData.MaterialName)->Ambient.x);
 		mEffect.SetVariable("Kd", mData.MaterialData->GetMaterial(mData.MaterialName)->Diffuse.x);
 		mEffect.SetVariable("Ks", mData.MaterialData->GetMaterial(mData.MaterialName)->Specular.x);

@@ -29,6 +29,7 @@ Ground::Ground(ID3D10Device* device)
 	mVertexBuffer.SetData(bufferDescription, NULL);
 
 	mEffect.SetVariable("gModelTexture", Resources::Texture(mDevice, "cobblestone.png").GetShaderResourceView());
+	mEffect.SetVariable("gGlowMap", Resources::Texture(mDevice, "glow.png").GetShaderResourceView());
 }
 
 void Ground::Draw(const Camera::Camera& camera)
@@ -45,10 +46,4 @@ void Ground::Draw(const Camera::Camera& camera)
 		mEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mDevice);
 		mDevice->Draw(mVertexBuffer.GetElementCount(), 0);
 	}
-}
-
-// DEBUG
-void Ground::SetTexture(ID3D10ShaderResourceView* newTexture)
-{
-	mEffect.SetVariable("gModelTexture", newTexture);
 }

@@ -1,21 +1,24 @@
 /**
-	File: Ground.fx
-	Created on: 2012-06-04
-
-	Render a quad as ground for the world.
+	File: Morph.fx
+	Created on: 2012-06-06
 */
 
 /** Input Layouts & Global Variables */
 struct VS_INPUT
 {
-	float3 PositionL : POSITION;
-	float2 TexCoord : TEXCOORD;
+	float3 Position1L : POSITION0;
+	float3 Normal1L : NORMAL0;
+	float2 TexCoord1 : TEXCOORD0;
+	float3 Position2L : POSITION1;
+	float3 Normal2L : NORMAL1;
+	float2 TexCoord2 : TEXCOORD1;
 };
 
 struct PS_INPUT
 {
 	float4 PositionH : SV_POSITION;
 	float4 PositionW : POSITION;
+	float4 NormalW : NORMAL;
 	float2 TexCoord : TEXCOORD;
 };
 
@@ -24,24 +27,22 @@ struct PS_OUTPUT
 	float4 Color : SV_TARGET0;
 	float4 PositionW : SV_TARGET1;
 	float4 NormalW : SV_TARGET2;
-	float4 Material : SV_TARGET3;
+	float4 Material	: SV_TARGET3;
 };
-
 
 cbuffer cbEveryFrame
 {
-	matrix gMVP;
-	matrix gModel;
+	matrix	gWorld;
+	matrix	gMVP;
 };
 
-Texture2D gModelTexture;
+Texture2D gTexture;
 Texture2D gGlowMap;
-
-float Ka = 1.0;
-float Kd = 1.0;
-float Ks = 1.0;
-float A = 1.0;
-
+float Ka;
+float Kd;
+float Ks;
+float A;
+float t;
 
 /** Render states */
 RasterizerState NoCulling
@@ -63,15 +64,18 @@ DepthStencilState EnableDepth
 	DepthFunc = LESS_EQUAL;
 };
 
-
 /** Shader implementation */
 PS_INPUT VS(VS_INPUT input)
 {
 	PS_INPUT output;
 
-	output.PositionH = mul(float4(input.PositionL, 1.0), gMVP);
-	output.PositionW = mul(float4(input.PositionL, 1.0), gModel);
-	output.TexCoord = input.TexCoord;
+	float3 pos = lerp(input.Position1L, input.Position2L, t);
+	float3 nor = lerp(input.Normal1L, input.Normal2L, t);
+
+	output.PositionH = mul(float4(pos, 1.0), gMVP);
+	output.PositionW = mul(float4(pos, 1.0), gWorld);
+	output.NormalW = mul(float4(nor, 0.0), gWorld);
+	output.TexCoord = lerp(input.TexCoord1, input.TexCoord2, t);
 
 	return output;
 }
@@ -82,14 +86,13 @@ PS_OUTPUT PS(PS_INPUT input)
 
 	float3 glowColor = gGlowMap.Sample(LinearSampler, input.TexCoord).xyz;
 
-	output.Color = float4(gModelTexture.Sample(LinearSampler, input.TexCoord).xyz, glowColor.x);
+	output.Color = float4(gTexture.Sample(LinearSampler, input.TexCoord).xyz, glowColor.x);
 	output.PositionW = float4(input.PositionW.xyz, glowColor.y);
-	output.NormalW = float4(0.0f, 1.0f, 0.0f, glowColor.z);
+	output.NormalW = float4(input.NormalW.xyz, glowColor.z);
 	output.Material = float4(Ka, Kd, Ks, A);
 
 	return output;
 }
-
 
 /** Technique definitions */
 technique10 DrawTechnique

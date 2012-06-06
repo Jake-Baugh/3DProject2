@@ -1,6 +1,7 @@
 #ifndef PROJECT_HPP
 #define PROJECT_HPP
 
+#include <vector>
 #include <Framework\Game.hpp>
 #include <Framework\VertexBuffer.hpp>
 #include <Framework\Effect\Effect.hpp>
@@ -11,6 +12,11 @@
 #include <Camera\CameraController.hpp>
 #include <Ground.hpp>
 #include <DeferredRenderer.hpp>
+#include <Helper\MorphAnimation.hpp>
+
+// DEBUG
+#include <Helper\DrawableSpline.hpp>
+#include <Camera\SplineCameraController.hpp>
 
 class Project : public Framework::Game
 {
@@ -44,6 +50,7 @@ private:
 		ProjectionDescription(unsigned int clientWidth, unsigned int clientHeight);
 	};
 
+	BezierCurve mCameraSpline;
 	Camera::Camera mCamera;
 	Camera::CameraController* mCameraController;
 
@@ -52,10 +59,14 @@ private:
 
 	Helper::DrawableFrustum mDrawableFrustum;
 	Resources::ModelObj mModel;
+	Helper::MorphAnimation* mAnimation;
 	Ground mGround;
 	BezierCurve mCurve;
 	Framework::VertexBuffer mCurveBuffer;
 	Framework::Effect::Effect mCurveEffect;
+
+	// DEBUG
+	Helper::DrawableSpline mCameraCurve;
 
 	float mPacmanT;
 };

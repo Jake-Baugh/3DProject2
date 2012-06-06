@@ -131,20 +131,23 @@ PS_INPUT VS(VS_INPUT input)
 
 float4 PS(PS_INPUT input) : SV_TARGET0
 {
-	float3 posW = gPositionBuffer.Sample(LinearSampler, input.TexCoord).xyz;
-	float4 albedo = float4(gColorBuffer.Sample(LinearSampler, input.TexCoord).xyz, 1.0f);
-	float3 normalW = normalize(gNormalBuffer.Sample(LinearSampler, input.TexCoord).xyz);
-	float4 material = gMaterialBuffer.Sample(LinearSampler, input.TexCoord);
+	float4 sampledColor = gColorBuffer.Sample(LinearSampler, input.TexCoord);
+	float4 sampledPosition = gPositionBuffer.Sample(LinearSampler, input.TexCoord);
+	float4 sampledNormal = gNormalBuffer.Sample(LinearSampler, input.TexCoord);
+	float4 sampledMaterial = gMaterialBuffer.Sample(LinearSampler, input.TexCoord);
 
+	float4 albedo = float4(sampledColor.xyz, 1.0f);
+	float3 posW = sampledPosition.xyz;
+	float3 normalW = normalize(sampledNormal.xyz);
 
 	float4 color = 0;
 	float2 Diffuse = float2(0, 0);
 	float Specular = 0;
 	
 	Diffuse = Fa(dot(normalW, -gDirectionalLight.DirectionW.xyz));
-	Specular = Fb(dot(normalW, normalize(normalW - gDirectionalLight.DirectionW.xyz)), material.w);
-	color += albedo * Diffuse.x * gDirectionalLight.Intensity * material.y;
-	color += Specular * gDirectionalLight.Intensity * Diffuse.y * material.z;
+	Specular = Fb(dot(normalW, normalize(normalW - gDirectionalLight.DirectionW.xyz)), sampledMaterial.w);
+	color += albedo * Diffuse.x * gDirectionalLight.Intensity * sampledMaterial.y;
+	color += Specular * gDirectionalLight.Intensity * Diffuse.y * sampledMaterial.z;
 	
 	for (int i = 0; i < gPointLightCount; ++i)
 	{
@@ -154,15 +157,17 @@ float4 PS(PS_INPUT input) : SV_TARGET0
 		{
 			float4 intensity = float4(gPointLights[i].Intensity, 1.0f) * (1.0f - pow(factor, 4));
 			Diffuse = Fa(dot(normalW, lightW));
-			Specular = Fb(dot(normalW, normalize(normalW + lightW)), material.w);
-			color += albedo * Diffuse.x * intensity * material.y;
-			color += Specular * intensity * Diffuse.y * material.z;
+			Specular = Fb(dot(normalW, normalize(normalW + lightW)), sampledMaterial.w);
+			color += albedo * Diffuse.x * intensity * sampledMaterial.y;
+			color += Specular * intensity * Diffuse.y * sampledMaterial.z;
 		}
 	}
 
-
-	return (0.8f * albedo) + (0.2f * color);
+	float4 glowColor = float4(sampledColor.w, sampledPosition.w, sampledNormal.w, 0.0f);
+	color = (0.8f * albedo) + (0.2f * color);
+	color += glowColor;
 	
+	return color;
 
 	/*
 	float4 result = float4(CalculateDirectionalLight(gDirectionalLight.Intensity.xyz, posW, albedo, normalW, material, gDirectionalLight.DirectionW.xyz), 0.0f);

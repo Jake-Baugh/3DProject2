@@ -38,4 +38,10 @@ inline void SafeRelease(T*& handle)
 	}
 }
 
+template <typename T>
+inline T Clamp(T value, T a, T b)
+{
+	return (value < a ? a : (value > b ? b : value));
+}
+
 #endif

@@ -13,7 +13,8 @@ namespace Resources
 	class ModelObj
 	{
 	public:
-		ModelObj(ID3D10Device* device, const std::string& filename);
+		ModelObj(ID3D10Device* device, const std::string& textureFilename, const std::string& glowmapFilename);
+		~ModelObj() throw();
 
 		// Bind the model's associated vertex buffer to an input slot
 		void Bind(unsigned int slot = 0);
@@ -31,6 +32,7 @@ namespace Resources
 	private:
 		ID3D10Device* mDevice;
 		StaticModelData mData;
+		Texture* mGlowMap;
 		Framework::Effect::Effect mEffect;
 		float mScale;
 		D3DXCOLOR mTintColor;

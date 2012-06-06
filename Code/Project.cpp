@@ -26,17 +26,21 @@ Project::ProjectionDescription::ProjectionDescription(unsigned int clientWidth, 
 
 Project::Project(HINSTANCE instance)
 	: Game(instance, WindowDescription().Description, ContextDescription().Description)
+	, mCameraSpline(D3DXVECTOR3(-20, 30, -20), D3DXVECTOR3(-20, 0, -20), D3DXVECTOR3(20, 60, 20), D3DXVECTOR3(20,30,20))
 	, mCamera(ProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight()).Frustum.CreatePerspectiveProjection(), D3DXVECTOR3(0.0f, 30.0f, -20.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f))
+	//, mCameraController(new Camera::SplineCameraController(&mCamera, &mCameraSpline, Camera::SplineCameraController::Spline))
 	, mCameraController(new Camera::FreeCameraController(&mCamera))
 	, mDeferredRenderer(&mD3DContext, 1024, 768)
 	, mBufferToRender(-1)
 	, mDrawableFrustum(mD3DContext.GetDevice(), ProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight()).Frustum, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f))
-	, mModel(mD3DContext.GetDevice(), "Pacman2.obj")
+	, mModel(mD3DContext.GetDevice(), "Pacman2.obj", "glow.png")
 	, mGround(mD3DContext.GetDevice())
 	, mCurve(D3DXVECTOR3(0,0,0), D3DXVECTOR3(0,2,10), D3DXVECTOR3(0,1,11), D3DXVECTOR3(0,5,15))
 	, mCurveBuffer(mD3DContext.GetDevice())
 	, mCurveEffect(mD3DContext.GetDevice(), "Resources/Effects/Curve.fx")
 	, mPacmanT(0.0f)
+	, mAnimation(NULL)
+	, mCameraCurve(mD3DContext.GetDevice(), &mCameraSpline) // DEBUG
 {
 	std::vector<D3DXVECTOR3> curvePos;
 	mCurve.AddSegment(5, D3DXVECTOR3(-3, 5, 10), D3DXVECTOR3(5, 2, 0));
@@ -57,6 +61,9 @@ Project::Project(HINSTANCE instance)
 	inputLayout.push_back(Framework::Effect::InputLayoutElement("POSITION", DXGI_FORMAT_R32G32B32_FLOAT));
 
 	mCurveEffect.GetTechniqueByIndex(0).GetPassByIndex(0).SetInputLayout(inputLayout);
+
+	//SafeDelete(mCameraController);
+	//mCameraController = new Camera::SplineCameraController(&mCamera, &mCurve, Camera::SplineCameraController::Spline);
 
 	
 	DirectionalLight dl;
@@ -91,11 +98,20 @@ Project::Project(HINSTANCE instance)
 	
 	//mDrawableFrustum.SetFrustum(frustum);
 	mDrawableFrustum.Update(mCamera.GetPosition(), mCamera.GetDirection());
+
+	std::vector<std::string> keyFrameObjs;
+	keyFrameObjs.push_back("Pacman1.obj");
+	keyFrameObjs.push_back("Pacman2.obj");
+	std::vector<float> keyFrameTimes;
+	keyFrameTimes.push_back(0.25f);
+	keyFrameTimes.push_back(1.0f);
+	mAnimation = new Helper::MorphAnimation(mD3DContext.GetDevice(), keyFrameObjs, keyFrameTimes, "glow.png");
 }
 
 Project::~Project() throw()
 {
 	SafeDelete(mCameraController);
+	SafeDelete(mAnimation);
 }
 
 void Project::KeyPressed(Framework::ApplicationWindow* window, int keyCode)
@@ -138,7 +154,10 @@ void Project::KeyPressed(Framework::ApplicationWindow* window, int keyCode)
 
 void Project::Update(float dt)
 {
-	mPacmanT += dt;
+	mAnimation->Update(dt);
+
+	//mPacmanT += dt;
+	mPacmanT = 1.5;
 	if (mPacmanT > mCurve.GetLength())
 		mPacmanT = 0.0f;
 
@@ -153,13 +172,16 @@ void Project::Draw(float dt)
 
 	
 	mGround.Draw(mCamera);
+	
 
-	mModel.Bind();
+	//mModel.Bind();
 	//mModel.Draw(D3DXVECTOR3(0.0f, 1.0f, 0.0f), mCamera);
-	mModel.Draw(mCurve.GetPos(mPacmanT), mCamera);
+	//mModel.Draw(mCurve.GetPos(mPacmanT), mCamera);
 
 	D3DXMATRIX world;
 	D3DXMatrixIdentity(&world);
+
+	mAnimation->Draw(mCamera, world);
 
 	mCurveEffect.SetVariable("gMVP", mCamera.GetViewProjection());
 	mCurveEffect.SetVariable("gWorld", world);
@@ -170,6 +192,8 @@ void Project::Draw(float dt)
 		mCurveEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mD3DContext.GetDevice());
 		mD3DContext.GetDevice()->Draw(mCurveBuffer.GetElementCount(), 0);
 	}
+
+	mCameraCurve.Draw(mCamera);
 
 	mDrawableFrustum.Draw(mCamera);
 	
