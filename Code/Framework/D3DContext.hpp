@@ -79,6 +79,9 @@ namespace Framework
 		
 		// Swap the frontbuffer and the backbuffer
 		void SwapBuffers();
+
+		// Reset the render target to the back buffer and the main depth/stencil buffer.
+		void ResetRenderTarget();
 	private:
 		ApplicationWindow* mTargetWindow;
 

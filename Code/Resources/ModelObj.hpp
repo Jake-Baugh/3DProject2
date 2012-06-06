@@ -6,7 +6,7 @@
 #include <Helper\Global.hpp>
 #include <Resources\StaticModelData.hpp>
 #include <Framework\Effect\Effect.hpp>
-#include <Helper\Camera.hpp>
+#include <Camera\Camera.hpp>
 
 namespace Resources
 {
@@ -19,8 +19,8 @@ namespace Resources
 		void Bind(unsigned int slot = 0);
 
 		// Draw the object. Must be bound to an input slot.
-		void Draw(const D3DXVECTOR3& drawPosition, const Helper::Camera& camera);
-		void Draw(const D3DXMATRIX& modelMatrix, const Helper::Camera& camera);
+		void Draw(const D3DXVECTOR3& drawPosition, const Camera::Camera& camera);
+		void Draw(const D3DXMATRIX& modelMatrix, const Camera::Camera& camera);
 
 		// Scale the object
 		void SetScale(float newScale);

@@ -1,14 +1,25 @@
 struct VS_INPUT
 {
-	float3		position	: POSITION;
+	float3		positionL	: POSITION;
 	float2		uv			: TEXCOORD;
 };
 
 struct PS_INPUT
 {
-	float4		position	: SV_POSITION;
+	float4		positionH	: SV_POSITION;
+	float3		positionW	: POSITION;
 	float2		uv			: TEXCOORD;
 };
+
+struct PS_OUTPUT
+{
+	float4		color		: SV_TARGET0;
+	float4		position	: SV_TARGET1;
+	float4		normal		: SV_TARGET2;
+	float4		material	: SV_TARGET3;
+};
+
+
 
 RasterizerState NoCulling
 {
@@ -29,28 +40,43 @@ DepthStencilState EnableDepth
 	DepthFunc = LESS_EQUAL;
 };
 
+
+
 cbuffer cbEveryFrame
 {
-	matrix	gMVP;
+	matrix gMVP;
+	matrix gModel;
 };
 
 Texture2D gModelTexture;
+
+float Ka = 1.0;
+float Kd = 1.0;
+float Ks = 1.0;
+float A = 1.0;
+
 
 PS_INPUT VS(VS_INPUT input)
 {
 	PS_INPUT output;
 
-	output.position = mul(float4(input.position, 1.0), gMVP);
+	output.positionH = mul(float4(input.positionL, 1.0), gMVP);
+	output.positionW = mul(float4(input.positionL, 1.0), gModel);
 	output.uv = input.uv;
 
 	return output;
 }
 
-float4 PS(PS_INPUT input) : SV_Target0
+PS_OUTPUT PS(PS_INPUT input)
 {
-	float4 texColor = gModelTexture.Sample(linearSampler, input.uv);
+	PS_OUTPUT output;
 
-	return texColor;
+	output.color = gModelTexture.Sample(linearSampler, input.uv);
+	output.position = float4(input.positionW, 1.0);
+	output.normal = float4(0.0f, 1.0f, 0.0f, 1.0f);
+	output.material = float4(Ka, Kd, Ks, A);
+
+	return output;
 }
 
 technique10 DrawTechnique

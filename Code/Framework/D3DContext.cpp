@@ -164,6 +164,11 @@ namespace Framework
 		mSwapChain->Present(0, 0);
 	}
 
+	void D3DContext::ResetRenderTarget()
+	{
+		mDevice->OMSetRenderTargets(1, &mBackBufferView, mDepthStencilView);
+	}
+
 	bool D3DContext::CreateDeviceAndSwapChain(Description description)
 	{
 		unsigned int deviceFlags = 0;

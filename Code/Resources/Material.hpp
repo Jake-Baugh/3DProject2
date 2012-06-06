@@ -20,7 +20,7 @@ namespace Resources
 			int IlluminationModel;		// illum, 0-10
 			//float Opacitiy;				// d or Tr, 1.0-> fully opaque, 0.0-> fully transparent
 			float RefractionIndex;		// Ni, optical density, (0.001)1.0-10.0, 1.0-> light doesn't bend
-			//float SpecularExp;			// Ns, ~0-1000, High value-> concentrated highlight
+			float SpecularExp;			// Ns, ~0-1000, High value-> concentrated highlight
 			//float Sharpness;			// Sharpness of reflections, 0-1000, default 60.0
 			Texture* MainTexture;		// Texture that can be sent to the shaders
 

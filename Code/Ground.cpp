@@ -31,9 +31,13 @@ Ground::Ground(ID3D10Device* device)
 	mEffect.SetVariable("gModelTexture", Resources::Texture(mDevice, "cobblestone.png").GetShaderResourceView());
 }
 
-void Ground::Draw(const Helper::Camera& camera)
+void Ground::Draw(const Camera::Camera& camera)
 {
+	D3DXMATRIX matModel;
+	D3DXMatrixIdentity(&matModel);
+
 	mEffect.SetVariable("gMVP", camera.GetViewProjection());
+	mEffect.SetVariable("gModel", matModel);
 
 	mVertexBuffer.Bind();
 	for (unsigned int p = 0; p < mEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)
@@ -41,4 +45,10 @@ void Ground::Draw(const Helper::Camera& camera)
 		mEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mDevice);
 		mDevice->Draw(mVertexBuffer.GetElementCount(), 0);
 	}
+}
+
+// DEBUG
+void Ground::SetTexture(ID3D10ShaderResourceView* newTexture)
+{
+	mEffect.SetVariable("gModelTexture", newTexture);
 }

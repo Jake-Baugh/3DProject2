@@ -4,11 +4,12 @@
 #include <Framework\Game.hpp>
 #include <Framework\VertexBuffer.hpp>
 #include <Framework\Effect\Effect.hpp>
-#include <Helper\Camera.hpp>
 #include <Helper\BezierCurve.hpp>
 #include <Resources\ModelObj.hpp>
-#include <CameraController.hpp>
+#include <Camera\Camera.hpp>
+#include <Camera\CameraController.hpp>
 #include <Ground.hpp>
+#include <DeferredRenderer.hpp>
 
 class Project : public Framework::Game
 {
@@ -42,13 +43,17 @@ private:
 		ProjectionDescription(unsigned int clientWidth, unsigned int clientHeight);
 	};
 
+	Camera::Camera mCamera;
+	Camera::CameraController* mCameraController;
+
+	DeferredRenderer mDeferredRenderer;
+	int mBufferToRender;
+
+	Resources::ModelObj mModel;
+	Ground mGround;
 	BezierCurve mCurve;
 	Framework::VertexBuffer mCurveBuffer;
 	Framework::Effect::Effect mCurveEffect;
-	Helper::Camera mCamera;
-	CameraController* mCameraController;
-	Resources::ModelObj mModel;
-	Ground mGround;
 };
 
 #endif

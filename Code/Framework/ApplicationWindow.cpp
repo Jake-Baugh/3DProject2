@@ -33,6 +33,10 @@ namespace Framework
 	}
 
 
+	InputState::Keyboard::Keyboard()
+	{
+		ZeroMemory(&Keys, sizeof(bool) * 256);
+	}
 
 	ApplicationWindow::Description::Description()
 		: X(0)
@@ -117,8 +121,20 @@ namespace Framework
 		return mExitValue;
 	}
 
+	const InputState& ApplicationWindow::GetCurrentInput() const
+	{
+		return mCurrentInput;
+	}
+
+	const InputState& ApplicationWindow::GetPreviousInput() const
+	{
+		return mPreviousInput;
+	}
+
 	bool ApplicationWindow::ProcessMessages()
 	{
+		mPreviousInput = mCurrentInput;
+
 		MSG message;
 		ZeroMemory(&message, sizeof(message));
 
@@ -208,8 +224,15 @@ namespace Framework
 
 	bool ApplicationWindow::HandleWindowMessage(UINT message, WPARAM wParam, LPARAM lParam)
 	{
+		PAINTSTRUCT ps;
+		HDC hdc;
+
 		switch (message)
 		{
+			case WM_PAINT:
+				hdc = BeginPaint(mHandle, &ps);
+				EndPaint(mHandle, &ps);
+				return true;
 			case WM_DESTROY:
 				PostQuitMessage(0);
 				return true;
@@ -255,6 +278,7 @@ namespace Framework
 
 	void ApplicationWindow::HandleKeyDownMessage(WPARAM wParam, LPARAM lParam)
 	{
+		mCurrentInput.Keyboard.Keys[wParam] = true;
 		for (size_t i = 0; i < mNotificationSubscribers.size(); ++i)
 		{
 			mNotificationSubscribers[i]->KeyPressed(this, wParam);
@@ -263,6 +287,7 @@ namespace Framework
 
 	void ApplicationWindow::HandleKeyUpMessage(WPARAM wParam, LPARAM lParam)
 	{
+		mCurrentInput.Keyboard.Keys[wParam] = false;
 		for (size_t i = 0; i < mNotificationSubscribers.size(); ++i)
 		{
 			mNotificationSubscribers[i]->KeyReleased(this, wParam);

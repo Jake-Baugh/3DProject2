@@ -1,17 +1,26 @@
 struct VS_INPUT
 {
-	float3		position	: POSITION;
-	float3		normal		: NORMAL;
+	float3		positionL	: POSITION;
+	float3		normalL		: NORMAL;
 	float2		uv			: TEXCOORD;
 };
 
 struct PS_INPUT
 {
-	float4		position	: SV_POSITION;
+	float4		positionH	: SV_POSITION;
 	float3		positionW	: POSITION;
 	float3		normalW		: NORMAL;
 	float2		uv			: TEXCOORD;
 };
+
+struct PS_OUTPUT
+{
+	float4		color		: SV_TARGET0;
+	float4		positionW	: SV_TARGET1;
+	float4		normalW		: SV_TARGET2;
+	float4		material	: SV_TARGET3;
+};
+
 
 RasterizerState NoCulling
 {
@@ -32,38 +41,42 @@ DepthStencilState EnableDepth
 	DepthFunc = LESS_EQUAL;
 };
 
+
 cbuffer cbEveryFrame
 {
-	matrix	g_matWorld;
-	matrix	g_matWVP;
+	matrix	gWorld;
+	matrix	gMVP;
 };
 
-Texture2D g_modelTexture;
-float4 g_modelTintColor = float4(1.0, 1.0, 1.0, 1.0);
-float4 g_lightDirection;
+Texture2D gTexture;
+float Ka;
+float Kd;
+float Ks;
+float A;
+
 
 PS_INPUT VS(VS_INPUT input)
 {
 	PS_INPUT output;
 
-	output.position = mul(float4(input.position, 1.0), g_matWVP);
-	output.positionW = mul(float4(input.position, 1.0), g_matWorld).xyz;
-	output.normalW = mul(float4(input.normal, 0.0), g_matWorld).xyz;
+	output.positionH = mul(float4(input.positionL, 1.0), gMVP);
+	output.positionW = mul(float4(input.positionL, 1.0), gWorld).xyz;
+	output.normalW = mul(float4(input.normalL, 0.0), gWorld).xyz;
 	output.uv = input.uv;
 
 	return output;
 }
 
-float4 PS(PS_INPUT input) : SV_Target0
+PS_OUTPUT PS(PS_INPUT input)
 {
-	float4 texColor = g_modelTexture.Sample(linearSampler, input.uv);
-	float3 lightVec = normalize(g_lightDirection.xyz - input.positionW);
-	float diffuse = dot(lightVec, normalize(input.normalW));
+	PS_OUTPUT output;
 
-	texColor = texColor + (diffuse * 0.5);
-	texColor = texColor * g_modelTintColor;
+	output.color = gTexture.Sample(linearSampler, input.uv);
+	output.positionW = float4(input.positionW, 1.0f);
+	output.normalW = float4(input.normalW, 1.0f);
+	output.material = float4(Ka, Kd, Ks, A);
 
-	return texColor;
+	return output;
 }
 
 technique10 DrawTechnique

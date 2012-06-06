@@ -3,16 +3,20 @@
 
 #include <Framework\VertexBuffer.hpp>
 #include <Framework\Effect\Effect.hpp>
-#include <Helper\Camera.hpp>
+#include <Camera\Camera.hpp>
 
 class Ground
 {
 public:
 	Ground(ID3D10Device* device);
 
-	void Draw(const Helper::Camera& camera);
+	void Draw(const Camera::Camera& camera);
+
+	// DEBUG
+	void SetTexture(ID3D10ShaderResourceView* newTexture);
 
 	static const float C_HALFSIZE;
+
 private:
 	struct Vertex
 	{

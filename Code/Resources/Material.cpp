@@ -10,7 +10,7 @@ namespace Resources
 		: Ambient(D3DXVECTOR3(0.2, 0.2, 0.2)), Diffuse(D3DXVECTOR3(0.8, 0.8, 0.8))
 		,  Specular(D3DXVECTOR3(1.0, 1.0, 1.0)), Tf(D3DXVECTOR3(1.0, 1.0, 1.0))
 		,  IlluminationModel(0), /*Opacitiy(1.0),*/ RefractionIndex(1.0)
-		/*,  SpecularExp(), Sharpness(60.0)*/, MainTexture(NULL)
+		,  SpecularExp(1.0f), /*Sharpness(60.0), */ MainTexture(NULL)
 	{
 		MainTexture = new Texture(device, "whitePixel.png");
 	}
@@ -101,10 +101,10 @@ namespace Resources
 			{
 				streamLine >> currMaterial->RefractionIndex;
 			}
-			//else if(key == "Ns") // Specular exponent
-			//{
-			//	streamLine >> currMaterial.SpecularExp;
-			//}
+			else if(key == "Ns") // Specular exponent
+			{
+				streamLine >> currMaterial->SpecularExp;
+			}
 			//else if(key == "sharpness") // Reflection sharpness
 			//{
 			//	streamLine >> currMaterial.Sharpness;
