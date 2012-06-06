@@ -63,6 +63,7 @@ namespace Camera
 		D3DXVECTOR3 position = mCamera->GetPosition();
 		D3DXVECTOR3 right;
 		D3DXVec3Cross(&right, &D3DXVECTOR3(0.0f, 1.0f, 0.0f), &direction);
+		D3DXVec3Normalize(&right, &right);
 
 		position += direction * moveForward * C_MOVE_SPEED * dt;
 		position += right * moveRight * C_MOVE_SPEED * dt;

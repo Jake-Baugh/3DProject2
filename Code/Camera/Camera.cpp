@@ -76,7 +76,7 @@ namespace Camera
 		D3DXVec3Normalize(&y, &y);
 		D3DXVec3Normalize(&z, &z);
 
-
+		
 		mView.m[0][0] = x.x;
 		mView.m[1][0] = x.y;
 		mView.m[2][0] = x.z;
@@ -96,7 +96,6 @@ namespace Camera
 		mView.m[1][3] = 0.0f;
 		mView.m[2][3] = 0.0f;
 		mView.m[3][3] = 1.0f;
-
 
 		mViewProjection = mView * mProjection;
 

@@ -5,6 +5,7 @@
 #include <Framework\VertexBuffer.hpp>
 #include <Framework\Effect\Effect.hpp>
 #include <Helper\BezierCurve.hpp>
+#include <Helper\DrawableFrustum.hpp>
 #include <Resources\ModelObj.hpp>
 #include <Camera\Camera.hpp>
 #include <Camera\CameraController.hpp>
@@ -49,11 +50,14 @@ private:
 	DeferredRenderer mDeferredRenderer;
 	int mBufferToRender;
 
+	Helper::DrawableFrustum mDrawableFrustum;
 	Resources::ModelObj mModel;
 	Ground mGround;
 	BezierCurve mCurve;
 	Framework::VertexBuffer mCurveBuffer;
 	Framework::Effect::Effect mCurveEffect;
+
+	float mPacmanT;
 };
 
 #endif

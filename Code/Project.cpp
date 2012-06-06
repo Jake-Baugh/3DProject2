@@ -30,11 +30,13 @@ Project::Project(HINSTANCE instance)
 	, mCameraController(new Camera::FreeCameraController(&mCamera))
 	, mDeferredRenderer(&mD3DContext, 1024, 768)
 	, mBufferToRender(-1)
+	, mDrawableFrustum(mD3DContext.GetDevice(), ProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight()).Frustum, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f))
 	, mModel(mD3DContext.GetDevice(), "Pacman2.obj")
 	, mGround(mD3DContext.GetDevice())
 	, mCurve(D3DXVECTOR3(0,0,0), D3DXVECTOR3(0,2,10), D3DXVECTOR3(0,1,11), D3DXVECTOR3(0,5,15))
 	, mCurveBuffer(mD3DContext.GetDevice())
 	, mCurveEffect(mD3DContext.GetDevice(), "Resources/Effects/Curve.fx")
+	, mPacmanT(0.0f)
 {
 	std::vector<D3DXVECTOR3> curvePos;
 	mCurve.AddSegment(5, D3DXVECTOR3(-3, 5, 10), D3DXVECTOR3(5, 2, 0));
@@ -78,7 +80,17 @@ Project::Project(HINSTANCE instance)
 		light.Radius = 20.0f;
 
 		mDeferredRenderer.AddPointLight(light);
-	}	
+	}
+
+
+	/*Helper::Frustum frustum;
+	frustum.NearDistance = 6.0f;
+	frustum.FarDistance = 20.0f;
+	frustum.FieldOfViewY = D3DX_PI * 0.25;
+	frustum.AspectRatio = 3.0 / 4.0;*/
+	
+	//mDrawableFrustum.SetFrustum(frustum);
+	mDrawableFrustum.Update(mCamera.GetPosition(), mCamera.GetDirection());
 }
 
 Project::~Project() throw()
@@ -117,11 +129,19 @@ void Project::KeyPressed(Framework::ApplicationWindow* window, int keyCode)
 		case VK_F6:
 			mBufferToRender = DeferredRenderer::C_GBUFFER_DEPTH;
 		break;
+
+		case 'K':
+			mDrawableFrustum.Update(mCamera.GetPosition(), mCamera.GetDirection());
+		break;
 	}
 }
 
 void Project::Update(float dt)
 {
+	mPacmanT += dt;
+	if (mPacmanT > mCurve.GetLength())
+		mPacmanT = 0.0f;
+
 	mCameraController->Update(dt, mWindow.GetCurrentInput(), mWindow.GetPreviousInput());
 	mCamera.Commit();
 }
@@ -131,9 +151,12 @@ void Project::Draw(float dt)
 	// Deferred stage
 	mDeferredRenderer.BeginDeferredState();
 
+	
 	mGround.Draw(mCamera);
+
 	mModel.Bind();
-	mModel.Draw(D3DXVECTOR3(0.0f, 1.0f, 0.0f), mCamera);
+	//mModel.Draw(D3DXVECTOR3(0.0f, 1.0f, 0.0f), mCamera);
+	mModel.Draw(mCurve.GetPos(mPacmanT), mCamera);
 
 	D3DXMATRIX world;
 	D3DXMatrixIdentity(&world);
@@ -148,6 +171,8 @@ void Project::Draw(float dt)
 		mD3DContext.GetDevice()->Draw(mCurveBuffer.GetElementCount(), 0);
 	}
 
+	mDrawableFrustum.Draw(mCamera);
+	
 	mDeferredRenderer.EndDeferredState();
 	mDeferredRenderer.ApplyLightingPhase(mCamera);
 

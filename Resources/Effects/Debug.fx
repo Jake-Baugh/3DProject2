@@ -1,8 +1,9 @@
 /**
-	File: Curve.fx
-	Created on: 2012-06-05
+	File: Debug.fx
+	Created on: 2012-06-06
 
-	Render a line strip in a clear, red color.
+	This shader will render geometry, without normal or texture, in wireframe mode.
+	It will, however, render this geometry to deferred G buffers.
 */
 
 /** Input Layouts & Global Variables */
@@ -22,8 +23,9 @@ struct PS_OUTPUT
 	float4 Color : SV_TARGET0;
 	float4 PositionW : SV_TARGET1;
 	float4 NormalW : SV_TARGET2;
-	float4 Material	: SV_TARGET3;
+	float4 Material : SV_TARGET3;
 };
+
 
 cbuffer cbEveryFrame
 {
@@ -33,16 +35,10 @@ cbuffer cbEveryFrame
 
 
 /** Render states */
-RasterizerState NoCulling
+RasterizerState StandardRasterState
 {
 	CullMode = None;
-};
-
-DepthStencilState EnableDepth
-{
-	DepthEnable = TRUE;
-	DepthWriteMask = ALL;
-	DepthFunc = LESS_EQUAL;
+	FillMode = Wireframe;
 };
 
 
@@ -51,7 +47,7 @@ PS_INPUT VS(VS_INPUT input)
 {
 	PS_INPUT output;
 
-	output.PositionH = mul(float4(input.PositionL, 1.0f), gMVP);
+	output.PositionH = mul(float4(input.PositionL, 1.0), gMVP);
 	output.PositionW = mul(float4(input.PositionL, 1.0f), gWorld);
 
 	return output;
@@ -71,7 +67,7 @@ PS_OUTPUT PS(PS_INPUT input)
 
 
 /** Technique definitions */
-technique10 DrawTechnique
+technique10 StandardTechnique
 {
 	pass P0
 	{
@@ -79,7 +75,6 @@ technique10 DrawTechnique
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_4_0, PS()));
 
-		SetRasterizerState(NoCulling);
-		SetDepthStencilState(EnableDepth, 0xff);
+		SetRasterizerState(StandardRasterState);
 	}
 }
