@@ -176,7 +176,7 @@ void Project::Draw(float dt)
 	mDeferredRenderer.BeginDeferredState();
 
 	
-	mGround.Draw(mCamera);
+	//mGround.Draw(mCamera);
 	
 
 	//mModel.Bind();
@@ -189,6 +189,7 @@ void Project::Draw(float dt)
 	mAnimation->Draw(mCamera, world);
 	mAnimation->DrawAABB(mCamera, world);
 
+	/*
 	mCurveEffect.SetVariable("gMVP", mCamera.GetViewProjection());
 	mCurveEffect.SetVariable("gWorld", world);
 
@@ -200,17 +201,11 @@ void Project::Draw(float dt)
 	}
 
 	mCameraCurve.Draw(mCamera);
+	*/
 
 	mDrawableFrustum.Draw(mCamera);
 
-	//Helper::DrawableBox bFrustum(mD3DContext.GetDevice(), dFrustum);
-	//Helper::DrawableBox bAABB(mD3DContext.GetDevice(), dAABB);
-	
-	D3DXMATRIX identity;
-	D3DXMatrixIdentity(&identity);
-	//bFrustum.Draw(mCamera, identity);
-	//bAABB.Draw(mCamera, identity);
-	
+
 	mDeferredRenderer.EndDeferredState();
 	mDeferredRenderer.ApplyLightingPhase(mCamera);
 

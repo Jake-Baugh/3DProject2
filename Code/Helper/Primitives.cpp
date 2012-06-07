@@ -1,4 +1,5 @@
 #include <cmath>
+#include <vector>
 #include <Helper\Primitives.hpp>
 
 namespace Helper
@@ -79,92 +80,125 @@ namespace Helper
 		}
 	}
 
+	bool PointInFrustum(const Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection, const D3DXVECTOR3& point)
+	{
+		D3DXVECTOR3 up = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+		D3DXVECTOR3 vec = point - frustumPosition;
+
+		D3DXVECTOR3 X;
+		D3DXVECTOR3 Y;
+
+		D3DXVec3Cross(&X, &up, &frustumDirection);
+		D3DXVec3Cross(&Y, &frustumDirection, &X);
+		D3DXVec3Normalize(&X, &X);
+		D3DXVec3Normalize(&Y, &Y);
+
+		float z = D3DXVec3Dot(&vec, &frustumDirection);
+
+		if (frustum.NearDistance > z || z > frustum.FarDistance)
+			return false;
+		float y = D3DXVec3Dot(&vec, &Y);
+		float h = z * 2.0f * tan(frustum.FieldOfViewY);
+		if (-h * 0.5f > y || y > h * 0.5f)
+			return false;
+		float x = D3DXVec3Dot(&vec, &X);
+		float w = h * frustum.AspectRatio;
+		if (-w * 0.5f > x || x > w * 0.5f)
+			return false;
+
+		return true;
+	}
 	
 	bool FrustumVsAABB(const Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection, const AABB3f& aabb)
 	{
-		D3DXVECTOR3 nearFrustumVertices[4];
-		D3DXVECTOR3 farFrustumVertices[4];
-		D3DXVECTOR3 nearAABBVertices[] = { D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y, aabb.Corners[0].Z)
-			, D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y, aabb.Corners[0].Z)
-			, D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[0].Z)
-			, D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[0].Z)
-		};
-		D3DXVECTOR3 farAABBVertices[] = { D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y, aabb.Corners[1].Z)
-			, D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y, aabb.Corners[1].Z)
-			, D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[1].Z)
-			, D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[1].Z)
-		};
+		std::vector<D3DXVECTOR3> boxVertices;
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y, aabb.Corners[0].Z));
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y, aabb.Corners[0].Z));
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[0].Z));
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[0].Z));
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y, aabb.Corners[1].Z));
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y, aabb.Corners[1].Z));
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[1].Z));
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[1].Z));
 
-		TransformFrustum(frustum, frustumPosition, frustumDirection, nearFrustumVertices, farFrustumVertices);
-
-
-
-		for (int i = 0; i < 3; ++i)
+		for (int i = 0; i < boxVertices.size(); ++i)
 		{
-			D3DXVECTOR2 nearAABBVertices2D[4];
-			D3DXVECTOR2 farAABBVertices2D[4];
+			if (PointInFrustum(frustum, frustumPosition, frustumDirection, boxVertices[i]))
+				return true;
+		}
 
-			D3DXVECTOR2 nearFrustumVertices2D[4];
-			D3DXVECTOR2 farFrustumVertices2D[4];
+		return false;
 
-			for (int j = 0; j < 2; ++j)
-			{
-				D3DXVECTOR2* currentAABBVertices2D = (j == 0) ? nearAABBVertices2D : farAABBVertices2D;
-				D3DXVECTOR3* currentAABBVertices = (j == 0) ? nearAABBVertices : farAABBVertices;
+		//TransformFrustum(frustum, frustumPosition, frustumDirection, nearFrustumVertices, farFrustumVertices);
 
-				D3DXVECTOR2* currentFrustumVertices2D = (j == 0) ? nearFrustumVertices2D : farFrustumVertices2D;
-				D3DXVECTOR3* currentFrustumVertices = (j == 0) ? nearFrustumVertices : farFrustumVertices;
-				for (int k = 0; k < 4; ++k)
-				{
-					// Note: When i = 1, the vector will be (z, x)
-					currentFrustumVertices2D[k] = D3DXVECTOR2(currentFrustumVertices[k][(i + 1) % 3], currentFrustumVertices[k][(i + 2) % 3]);
-					currentAABBVertices2D[k] = D3DXVECTOR2(currentAABBVertices[k][(i + 1) % 3], currentAABBVertices[k][(i + 2) % 3]);
 
-					if (i == 1)
-					{
-						currentFrustumVertices2D[k] = D3DXVECTOR2(currentFrustumVertices2D[k].y, currentAABBVertices2D[k].x);
-						currentAABBVertices2D[k] = D3DXVECTOR2(currentAABBVertices2D[k].y, currentAABBVertices2D[k].x);
-					}
-				}
-			}
 
-			
-			for (int n = 0; n < 2; ++n)
-			{
-				float minAABB = 10e9;
-				float maxAABB = -10e9;
-				float minFrustum = 10e9;
-				float maxFrustum = -10e9;
+		//for (int i = 0; i < 3; ++i)
+		//{
+		//	D3DXVECTOR2 nearAABBVertices2D[4];
+		//	D3DXVECTOR2 farAABBVertices2D[4];
 
-				for (int j = 0; j < 2; ++j)
-				{
-					D3DXVECTOR2* currentAABBVertices = (j == 0) ? nearAABBVertices2D : farAABBVertices2D;
-					D3DXVECTOR2* currentFrustumVertices = (j == 0) ? nearFrustumVertices2D : farFrustumVertices2D;
-					
-					for (int k = 0; k < 4; ++k)
-					{
-						float a = currentFrustumVertices[k][(n + 1) % 2];
-						float b = currentAABBVertices[k][(n + 1) % 2];
+		//	D3DXVECTOR2 nearFrustumVertices2D[4];
+		//	D3DXVECTOR2 farFrustumVertices2D[4];
 
-						minFrustum = (a < minFrustum) ? a : minFrustum;
-						maxFrustum = (a > maxFrustum) ? a : maxFrustum;
+		//	for (int j = 0; j < 2; ++j)
+		//	{
+		//		D3DXVECTOR2* currentAABBVertices2D = (j == 0) ? nearAABBVertices2D : farAABBVertices2D;
+		//		D3DXVECTOR3* currentAABBVertices = (j == 0) ? nearAABBVertices : farAABBVertices;
 
-						minAABB = (b < minAABB) ? b : minAABB;
-						maxAABB = (b > maxAABB) ? b : maxAABB; 
-					}
-				}
+		//		D3DXVECTOR2* currentFrustumVertices2D = (j == 0) ? nearFrustumVertices2D : farFrustumVertices2D;
+		//		D3DXVECTOR3* currentFrustumVertices = (j == 0) ? nearFrustumVertices : farFrustumVertices;
+		//		for (int k = 0; k < 4; ++k)
+		//		{
+		//			// Note: When i = 1, the vector will be (z, x)
+		//			currentFrustumVertices2D[k] = D3DXVECTOR2(currentFrustumVertices[k][(i + 1) % 3], currentFrustumVertices[k][(i + 2) % 3]);
+		//			currentAABBVertices2D[k] = D3DXVECTOR2(currentAABBVertices[k][(i + 1) % 3], currentAABBVertices[k][(i + 2) % 3]);
 
-				if (max(maxFrustum, maxAABB) - min(minFrustum, minAABB) > (maxFrustum - minFrustum) + (maxAABB - minAABB))
-					return false;
-				/*
-				if (maxAABB < minFrustum)
-					return false;
-				if (maxFrustum < minAABB)
-					return false;
-				*/
-			}
-		}	
+		//			if (i == 1)
+		//			{
+		//				currentFrustumVertices2D[k] = D3DXVECTOR2(currentFrustumVertices2D[k].y, currentAABBVertices2D[k].x);
+		//				currentAABBVertices2D[k] = D3DXVECTOR2(currentAABBVertices2D[k].y, currentAABBVertices2D[k].x);
+		//			}
+		//		}
+		//	}
 
-		return true;
+		//	
+		//	for (int n = 0; n < 2; ++n)
+		//	{
+		//		float minAABB = 10e9;
+		//		float maxAABB = -10e9;
+		//		float minFrustum = 10e9;
+		//		float maxFrustum = -10e9;
+
+		//		for (int j = 0; j < 2; ++j)
+		//		{
+		//			D3DXVECTOR2* currentAABBVertices = (j == 0) ? nearAABBVertices2D : farAABBVertices2D;
+		//			D3DXVECTOR2* currentFrustumVertices = (j == 0) ? nearFrustumVertices2D : farFrustumVertices2D;
+		//			
+		//			for (int k = 0; k < 4; ++k)
+		//			{
+		//				float a = currentFrustumVertices[k][(n + 1) % 2];
+		//				float b = currentAABBVertices[k][(n + 1) % 2];
+
+		//				minFrustum = (a < minFrustum) ? a : minFrustum;
+		//				maxFrustum = (a > maxFrustum) ? a : maxFrustum;
+
+		//				minAABB = (b < minAABB) ? b : minAABB;
+		//				maxAABB = (b > maxAABB) ? b : maxAABB; 
+		//			}
+		//		}
+
+		//		if (max(maxFrustum, maxAABB) - min(minFrustum, minAABB) > (maxFrustum - minFrustum) + (maxAABB - minAABB))
+		//			return false;
+		//		/*
+		//		if (maxAABB < minFrustum)
+		//			return false;
+		//		if (maxFrustum < minAABB)
+		//			return false;
+		//		*/
+		//	}
+		//}	
+
+		//return true;
 	}
 }
