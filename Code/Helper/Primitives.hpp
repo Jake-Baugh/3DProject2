@@ -1,6 +1,7 @@
 #ifndef PRIMITIVE_HPP
 #define PRIMITIVE_HPP
 
+#include <cmath>
 #include <Helper\Global.hpp>
 
 namespace Helper
@@ -60,6 +61,8 @@ namespace Helper
 		Point3();
 		Point3(T x, T y, T z);
 
+		const T& operator[](unsigned int index) const;
+		T& operator[](unsigned int index);
 		bool operator==(const Point3<T>& rhs) const;
 		bool operator!=(const Point3<T>& rhs) const;
 	};
@@ -138,6 +141,7 @@ namespace Helper
 		D3DXMATRIX CreatePerspectiveProjection() const;
 	};
 
+	bool FrustumVsAABB(const Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection, const AABB3f& aabb);
 
 
 	/**
@@ -225,6 +229,34 @@ namespace Helper
 	}
 
 	template <typename T>
+	const T& Point3<T>::operator[](unsigned int index) const
+	{
+		switch(index)
+		{
+			case 0:
+				return X;
+			case 1:
+				return Y;
+			case 2:
+				return Z;
+		}
+	}
+
+	template <typename T>
+	T& Point3<T>::operator[](unsigned int index)
+	{
+		switch(index)
+		{
+			case 0:
+				return X;
+			case 1:
+				return Y;
+			case 2:
+				return Z;
+		}
+	}
+
+	template <typename T>
 	bool Point3<T>::operator==(const Point3<T>& rhs) const
 	{
 		return (X == rhs.X && Y == rhs.Y && Z == rhs.Z);
@@ -261,25 +293,25 @@ namespace Helper
 	template <typename T>
 	T AABB2<T>::GetLeft() const
 	{
-		return std::min(Corners[0].x, Corners[1].x);
+		return std::min(Corners[0].X, Corners[1].X);
 	}
 
 	template <typename T>
 	T AABB2<T>::GetBottom() const
 	{
-		return std::min(Corners[0].y, Corners[1].y);
+		return std::min(Corners[0].Y, Corners[1].Y);
 	}
 
 	template <typename T>
 	T AABB2<T>::GetWidth() const
 	{
-		return std::abs(Corners[0].x - Corners[1].x);
+		return std::abs(Corners[0].X - Corners[1].X);
 	}
 
 	template <typename T>
 	T AABB2<T>::GetHeight() const
 	{
-		return std::abs(Corners[0].y - Corners[1].y);
+		return std::abs(Corners[0].Y - Corners[1].Y);
 	}
 
 
@@ -307,38 +339,38 @@ namespace Helper
 	template <typename T>
 	T AABB3<T>::GetLeftPlane() const
 	{
-		return std::min(Corners[0].x, Corners[1].x);
+		return std::min(Corners[0].X, Corners[1].X);
 	}
 
 	template <typename T>
 	T AABB3<T>::GetBottomPlane() const
 	{
-		return std::min(Corners[0].y, Corners[1].y);
+		return std::min(Corners[0].Y, Corners[1].Y);
 	}
 
 	template <typename T>
 	T AABB3<T>::GetFrontPlane() const
 	{
-		return std::min(Corners[0].z, Corners[1].z);
+		return std::min(Corners[0].Z, Corners[1].Z);
 	}
 
 
 	template <typename T>
 	T AABB3<T>::GetWidth() const
 	{
-		return std::abs(Corners[0].x - Corners[1].x);
+		return std::abs(Corners[0].X - Corners[1].X);
 	}
 
 	template <typename T>
 	T AABB3<T>::GetDepth() const
 	{
-		return std::abs(Corners[0].z - Corners[1].z);
+		return std::abs(Corners[0].Z - Corners[1].Z);
 	}
 
 	template <typename T>
 	T AABB3<T>::GetHeight() const
 	{
-		return std::abs(Corners[0].y - Corners[1].y);
+		return std::abs(Corners[0].Y - Corners[1].Y);
 	}
 }
 

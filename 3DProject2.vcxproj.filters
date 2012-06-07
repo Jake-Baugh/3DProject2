@@ -102,6 +102,9 @@
     <ClCompile Include="Code\Helper\MorphAnimation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Code\Helper\DrawableBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
@@ -206,6 +209,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Code\Helper\MorphAnimation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Code\Helper\DrawableBox.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

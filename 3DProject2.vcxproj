@@ -162,6 +162,7 @@
     <ClCompile Include="Code\Ground.cpp" />
     <ClCompile Include="Code\Helper\BezierCurve.cpp" />
     <ClCompile Include="Code\Camera\Camera.cpp" />
+    <ClCompile Include="Code\Helper\DrawableBox.cpp" />
     <ClCompile Include="Code\Helper\DrawableFrustum.cpp" />
     <ClCompile Include="Code\Helper\DrawableSpline.cpp" />
     <ClCompile Include="Code\Helper\GameFont.cpp" />
@@ -206,6 +207,7 @@
     <ClInclude Include="Code\Ground.hpp" />
     <ClInclude Include="Code\Helper\BezierCurve.hpp" />
     <ClInclude Include="Code\Camera\Camera.hpp" />
+    <ClInclude Include="Code\Helper\DrawableBox.hpp" />
     <ClInclude Include="Code\Helper\DrawableFrustum.hpp" />
     <ClInclude Include="Code\Helper\DrawableSpline.hpp" />
     <ClInclude Include="Code\Helper\GameFont.hpp" />

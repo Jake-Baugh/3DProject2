@@ -13,34 +13,6 @@ namespace Helper
 		, mForwards(true)
 		, mEffect(device, "Resources/Effects/Morph.fx")
 	{
-		//AnimationVertex frame1[] = {
-		//	{D3DXVECTOR3(-1.0f, -1.0f, 1.0f), D3DXVECTOR3(0,0,1), D3DXVECTOR2(0,0)},
-		//	{D3DXVECTOR3(1.0f, -1.0f, 1.0f), D3DXVECTOR3(0,0,1), D3DXVECTOR2(0,0)},
-		//	{D3DXVECTOR3(1.0f, 1.0f, 1.0f), D3DXVECTOR3(0,0,1), D3DXVECTOR2(0,0)},
-		//	{D3DXVECTOR3(-1.0f, 1.0f, 1.0f), D3DXVECTOR3(0,0,1), D3DXVECTOR2(0,0)}
-		//};
-		//AnimationVertex frame2[] = {
-		//	{D3DXVECTOR3(-10.0f, -1.0f, 10.0f), D3DXVECTOR3(0,0,1), D3DXVECTOR2(0,0)},
-		//	{D3DXVECTOR3(1.0f, -1.0f, 10.0f), D3DXVECTOR3(0,0,1), D3DXVECTOR2(0,0)},
-		//	{D3DXVECTOR3(1.0f, 1.0f, 10.0f), D3DXVECTOR3(0,0,1), D3DXVECTOR2(0,0)},
-		//	{D3DXVECTOR3(-10.0f, 1.0f, 10.0f), D3DXVECTOR3(0,0,1), D3DXVECTOR2(0,0)}
-		//};
-		//Framework::VertexBuffer::Description desc;
-		//desc.ElementCount = 4;
-		//desc.ElementSize = sizeof(AnimationVertex);
-		//desc.FirstElementPointer = frame1;
-		//desc.Topology = Framework::Topology::TriangleStrip;
-		//desc.Usage = Framework::Usage::Default;
-
-		////desc.
-		//Framework::VertexBuffer* buf = new Framework::VertexBuffer(mDevice);
-		//buf->SetData(desc, NULL);
-		//mKeyFrames.push_back(KeyFrame(buf, 5.0f));
-		//desc.FirstElementPointer = frame2;
-		//buf = new Framework::VertexBuffer(mDevice);
-		//buf->SetData(desc, NULL);
-		//mKeyFrames.push_back(KeyFrame(buf, -1.0f));
-
 		assert(keyFrameFilenames.size() == timeSpans.size());
 		for (int i = 0; i < keyFrameFilenames.size(); ++i)
 		{
@@ -78,23 +50,12 @@ namespace Helper
 
 	void MorphAnimation::Update(float dt)
 	{
-		/*mTime += dt;
-		if (mTime > mKeyFrames[mCurrentFrame].TimeSpan)
-		{
-			if (mCurrentFrame < mKeyFrames.size() - 2)
-			{
-				mCurrentFrame++;
-				mTime = 0.0f;
-			}
-			else
-				mTime = mKeyFrames[mCurrentFrame].TimeSpan;
-		}*/
 		HandleTime(dt);
 
 		mEffect.SetVariable("t", mTime / mKeyFrames[mCurrentFrame].TimeSpan);
 	}
 
-	void MorphAnimation::Draw(const Camera::Camera& camera, D3DXMATRIX modelMatrix)
+	void MorphAnimation::Draw(const Camera::Camera& camera, const D3DXMATRIX& modelMatrix)
 	{
 		D3DXMATRIX wvp;
 		wvp = modelMatrix * camera.GetViewProjection();
@@ -111,6 +72,16 @@ namespace Helper
 			mDevice->Draw(mKeyFrames[mCurrentFrame].Data->VertexData.GetElementCount(), 0);
 		}
 
+	}
+
+	void MorphAnimation::DrawAABB(const Camera::Camera& camera, const D3DXMATRIX& modelMatrix)
+	{
+		mKeyFrames[mCurrentFrame].Data->DrawAABB(camera, modelMatrix);
+	}
+
+	const AABB3f& MorphAnimation::GetAABB() const
+	{
+		return mKeyFrames[mCurrentFrame].Data->Box;
 	}
 
 	void MorphAnimation::HandleTime(float dt)

@@ -5,6 +5,8 @@
 #include <Helper\Global.hpp>
 #include <Framework\VertexBuffer.hpp>
 #include <Resources\Material.hpp>
+#include <Helper\DrawableBox.hpp>
+#include <Camera\Camera.hpp>
 
 namespace Resources
 {
@@ -22,7 +24,8 @@ namespace Resources
 		Framework::VertexBuffer VertexData;
 		Material* MaterialData;
 		std::string MaterialName;
-		
+		Helper::AABB3f Box;
+
 		StaticModelData(ID3D10Device* device, const std::string& objectFilename);
 		StaticModelData(ID3D10Device* device, const std::string& objectFilename, const std::string& materialFilename);
 		~StaticModelData() throw();
@@ -31,8 +34,11 @@ namespace Resources
 		bool LoadBuffer(const std::string& filename);
 		bool LoadMaterial(const std::string& filename);
 
+		void DrawAABB(const Camera::Camera& camera, const D3DXMATRIX& world);
+
 	private:
 		ID3D10Device* mDevice;
+		Helper::DrawableBox mDrawableBox;
 
 		// Loads the data from an .obj file.
 		// vertices, materialFile and materialName are all

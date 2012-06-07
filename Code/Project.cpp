@@ -154,7 +154,12 @@ void Project::KeyPressed(Framework::ApplicationWindow* window, int keyCode)
 
 void Project::Update(float dt)
 {
-	mAnimation->Update(dt);
+	
+	if (!Helper::FrustumVsAABB( Project::ProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight()).Frustum
+							 , mCamera.GetPosition()
+							 , mCamera.GetDirection()
+							 , mAnimation->GetAABB() ))
+		mAnimation->Update(dt);
 
 	//mPacmanT += dt;
 	mPacmanT = 1.5;
@@ -179,9 +184,10 @@ void Project::Draw(float dt)
 	//mModel.Draw(mCurve.GetPos(mPacmanT), mCamera);
 
 	D3DXMATRIX world;
-	D3DXMatrixIdentity(&world);
+	D3DXMatrixTranslation(&world, 0, 10, 0);
 
 	mAnimation->Draw(mCamera, world);
+	mAnimation->DrawAABB(mCamera, world);
 
 	mCurveEffect.SetVariable("gMVP", mCamera.GetViewProjection());
 	mCurveEffect.SetVariable("gWorld", world);
@@ -196,6 +202,14 @@ void Project::Draw(float dt)
 	mCameraCurve.Draw(mCamera);
 
 	mDrawableFrustum.Draw(mCamera);
+
+	//Helper::DrawableBox bFrustum(mD3DContext.GetDevice(), dFrustum);
+	//Helper::DrawableBox bAABB(mD3DContext.GetDevice(), dAABB);
+	
+	D3DXMATRIX identity;
+	D3DXMatrixIdentity(&identity);
+	//bFrustum.Draw(mCamera, identity);
+	//bAABB.Draw(mCamera, identity);
 	
 	mDeferredRenderer.EndDeferredState();
 	mDeferredRenderer.ApplyLightingPhase(mCamera);

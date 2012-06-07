@@ -9,6 +9,7 @@ namespace Resources
 	StaticModelData::StaticModelData(ID3D10Device* device, const std::string& objectFilename)
 		: mDevice(device)
 		, VertexData(device)
+		, mDrawableBox(mDevice, Box)
 	{
 		if (!Load(objectFilename))
 			throw r2ExceptionIOM("Failed to load object/material file: " + objectFilename);
@@ -17,6 +18,7 @@ namespace Resources
 	StaticModelData::StaticModelData(ID3D10Device* device, const std::string& objectFilename, const std::string& materialFilename)
 		: mDevice(device)
 		, VertexData(device)
+		, mDrawableBox(mDevice, Box)
 	{
 		if (!LoadBuffer(objectFilename))
 			throw r2ExceptionIOM("Failed to load object file: " + objectFilename);
@@ -101,6 +103,14 @@ namespace Resources
 				streamLine >> currPos.y;
 				streamLine >> currPos.z;
 				outPositions.push_back(currPos);
+
+				Box.Corners[0].X = (currPos.x < Box.Corners[0].X) ? currPos.x : Box.Corners[0].X;
+				Box.Corners[0].Y = (currPos.y < Box.Corners[0].Y) ? currPos.y : Box.Corners[0].Y;
+				Box.Corners[0].Z = (currPos.z < Box.Corners[0].Z) ? currPos.z : Box.Corners[0].Z;
+
+				Box.Corners[1].X = (currPos.x > Box.Corners[1].X) ? currPos.x : Box.Corners[1].X;
+				Box.Corners[1].Y = (currPos.y > Box.Corners[1].Y) ? currPos.y : Box.Corners[1].Y;
+				Box.Corners[1].Z = (currPos.z > Box.Corners[1].Z) ? currPos.z : Box.Corners[1].Z;
 			}
 			else if(key == "vt")
 			{
@@ -152,6 +162,13 @@ namespace Resources
 		desc.Topology = Framework::Topology::TriangleList;
 		desc.Usage = Framework::Usage::Default;
 
+		mDrawableBox.SetBox(Box);
+
 		return VertexData.SetData(desc, NULL);
+	}
+
+	void StaticModelData::DrawAABB(const Camera::Camera& camera, const D3DXMATRIX& world)
+	{
+		mDrawableBox.Draw(camera, world);
 	}
 }
