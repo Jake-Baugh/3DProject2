@@ -80,53 +80,82 @@ namespace Helper
 		}
 	}
 
-	bool PointInFrustum(const Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection, const D3DXVECTOR3& point)
+	enum Where
+	{
+		Above, Below, Left, Right, Near, Far, In
+	};
+
+	Where PointInFrustum(const Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection, const D3DXVECTOR3& point)
 	{
 		D3DXVECTOR3 up = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
 		D3DXVECTOR3 vec = point - frustumPosition;
 
 		D3DXVECTOR3 X;
 		D3DXVECTOR3 Y;
+		D3DXVECTOR3 Z;
 
 		D3DXVec3Cross(&X, &up, &frustumDirection);
 		D3DXVec3Cross(&Y, &frustumDirection, &X);
 		D3DXVec3Normalize(&X, &X);
 		D3DXVec3Normalize(&Y, &Y);
+		D3DXVec3Normalize(&Z, &frustumDirection);
 
-		float z = D3DXVec3Dot(&vec, &frustumDirection);
+		float z = D3DXVec3Dot(&vec, &Z);
 
-		if (frustum.NearDistance > z || z > frustum.FarDistance)
-			return false;
+		if (frustum.NearDistance > z)
+			return Where::Near;
+		if (z > frustum.FarDistance)
+			return Where::Far;
+
 		float y = D3DXVec3Dot(&vec, &Y);
-		float h = z * 2.0f * tan(frustum.FieldOfViewY);
-		if (-h * 0.5f > y || y > h * 0.5f)
-			return false;
+		float h = z * 2.0f * tan(frustum.FieldOfViewY * 0.5f);
+		if (-h * 0.5f > y)
+			return Where::Below;
+		if (y > h * 0.5f)
+			return Where::Above;
+		
 		float x = D3DXVec3Dot(&vec, &X);
 		float w = h * frustum.AspectRatio;
-		if (-w * 0.5f > x || x > w * 0.5f)
-			return false;
+		if (-w * 0.5f > x)
+			return Where::Left;
+		if (x > w * 0.5f)
+			return Where::Right;
 
-		return true;
+		return Where::In;
 	}
 	
-	bool FrustumVsAABB(const Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection, const AABB3f& aabb)
+	bool FrustumVsAABB(const Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection, const AABB3f& aabb, const D3DXVECTOR3& translation)
 	{
 		std::vector<D3DXVECTOR3> boxVertices;
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y, aabb.Corners[0].Z));
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y, aabb.Corners[0].Z));
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[0].Z));
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[0].Z));
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y, aabb.Corners[1].Z));
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y, aabb.Corners[1].Z));
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[1].Z));
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[1].Z));
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y, aabb.Corners[0].Z) + translation);
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y, aabb.Corners[0].Z) + translation);
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[0].Z) + translation);
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[0].Z) + translation);
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y, aabb.Corners[1].Z) + translation);
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y, aabb.Corners[1].Z) + translation);
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[1].Z) + translation);
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[1].Z) + translation);
+
+
+		int wheres[] = {0, 0, 0, 0, 0, 0};
+		
 
 		for (int i = 0; i < boxVertices.size(); ++i)
 		{
-			if (PointInFrustum(frustum, frustumPosition, frustumDirection, boxVertices[i]))
+			switch(Where w = PointInFrustum(frustum, frustumPosition, frustumDirection, boxVertices[i]))
+			{
+			case Where::In:
 				return true;
+			default:
+				wheres[w]++;
+			}
 		}
 
+		for (int i = 0; i < 6; ++i)
+		{
+			if (wheres[i] > 0 && wheres[i] < boxVertices.size())
+				return true;
+		}
 		return false;
 
 		//TransformFrustum(frustum, frustumPosition, frustumDirection, nearFrustumVertices, farFrustumVertices);

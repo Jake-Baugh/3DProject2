@@ -158,7 +158,8 @@ void Project::Update(float dt)
 	if (!Helper::FrustumVsAABB( Project::ProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight()).Frustum
 							 , mCamera.GetPosition()
 							 , mCamera.GetDirection()
-							 , mAnimation->GetAABB() ))
+							 , mAnimation->GetAABB()
+							 , D3DXVECTOR3(0.0f, 0.0f, 0.0f)))
 		mAnimation->Update(dt);
 
 	//mPacmanT += dt;
@@ -184,7 +185,8 @@ void Project::Draw(float dt)
 	//mModel.Draw(mCurve.GetPos(mPacmanT), mCamera);
 
 	D3DXMATRIX world;
-	D3DXMatrixTranslation(&world, 0, 10, 0);
+	//D3DXMatrixTranslation(&world, 0, 10, 0);
+	D3DXMatrixIdentity(&world);
 
 	mAnimation->Draw(mCamera, world);
 	mAnimation->DrawAABB(mCamera, world);

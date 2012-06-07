@@ -141,7 +141,7 @@ namespace Helper
 		D3DXMATRIX CreatePerspectiveProjection() const;
 	};
 
-	bool FrustumVsAABB(const Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection, const AABB3f& aabb);
+	bool FrustumVsAABB(const Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection, const AABB3f& aabb, const D3DXVECTOR3& translation);
 
 
 	/**
