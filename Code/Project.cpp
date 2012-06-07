@@ -27,7 +27,7 @@ Project::ProjectionDescription::ProjectionDescription(unsigned int clientWidth, 
 Project::Project(HINSTANCE instance)
 	: Game(instance, WindowDescription().Description, ContextDescription().Description)
 	, mCameraSpline(D3DXVECTOR3(-20, 30, -20), D3DXVECTOR3(-20, 0, -20), D3DXVECTOR3(20, 60, 20), D3DXVECTOR3(20,30,20))
-	, mCamera(ProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight()).Frustum.CreatePerspectiveProjection(), D3DXVECTOR3(0.0f, 30.0f, -20.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f))
+	, mCamera(ProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight()).Frustum.CreatePerspectiveProjection(), D3DXVECTOR3(0.0f, 0.0f, -10.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f))
 	//, mCameraController(new Camera::SplineCameraController(&mCamera, &mCameraSpline, Camera::SplineCameraController::Spline))
 	, mCameraController(new Camera::FreeCameraController(&mCamera))
 	, mDeferredRenderer(&mD3DContext, 1024, 768)
@@ -105,7 +105,7 @@ Project::Project(HINSTANCE instance)
 	std::vector<float> keyFrameTimes;
 	keyFrameTimes.push_back(0.25f);
 	keyFrameTimes.push_back(1.0f);
-	mAnimation = new Helper::MorphAnimation(mD3DContext.GetDevice(), keyFrameObjs, keyFrameTimes, "glow.png");
+	//mAnimation = new Helper::MorphAnimation(mD3DContext.GetDevice(), keyFrameObjs, keyFrameTimes, "glow.png");
 }
 
 Project::~Project() throw()
@@ -154,12 +154,16 @@ void Project::KeyPressed(Framework::ApplicationWindow* window, int keyCode)
 
 void Project::Update(float dt)
 {
+	/*
+	Helper::IntersectionState::IntersectionState intersectState = Helper::FrustumVsAABB( 
+						Project::ProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight()).Frustum
+						, mCamera.GetPosition()
+						, mCamera.GetDirection()
+						, mAnimation->GetAABB() );
 	
-	if (!Helper::FrustumVsAABB( Project::ProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight()).Frustum
-							 , mCamera.GetPosition()
-							 , mCamera.GetDirection()
-							 , mAnimation->GetAABB() ))
+	if (intersectState == Helper::IntersectionState::Outside)
 		mAnimation->Update(dt);
+	*/
 
 	//mPacmanT += dt;
 	mPacmanT = 1.5;
@@ -176,7 +180,7 @@ void Project::Draw(float dt)
 	mDeferredRenderer.BeginDeferredState();
 
 	
-	mGround.Draw(mCamera);
+	//mGround.Draw(mCamera);
 	
 
 	//mModel.Bind();
@@ -186,9 +190,10 @@ void Project::Draw(float dt)
 	D3DXMATRIX world;
 	D3DXMatrixTranslation(&world, 0, 10, 0);
 
-	mAnimation->Draw(mCamera, world);
-	mAnimation->DrawAABB(mCamera, world);
+	//mAnimation->Draw(mCamera, world);
+	//mAnimation->DrawAABB(mCamera, world);
 
+	/*
 	mCurveEffect.SetVariable("gMVP", mCamera.GetViewProjection());
 	mCurveEffect.SetVariable("gWorld", world);
 
@@ -200,6 +205,7 @@ void Project::Draw(float dt)
 	}
 
 	mCameraCurve.Draw(mCamera);
+	*/
 
 	mDrawableFrustum.Draw(mCamera);
 

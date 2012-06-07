@@ -141,7 +141,17 @@ namespace Helper
 		D3DXMATRIX CreatePerspectiveProjection() const;
 	};
 
-	bool FrustumVsAABB(const Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection, const AABB3f& aabb);
+	namespace IntersectionState
+	{
+		enum IntersectionState
+		{
+			Inside,
+			Intersecting,
+			Outside
+		};
+	}
+
+	IntersectionState::IntersectionState FrustumVsAABB(const Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection, const AABB3f& aabb);
 
 
 	/**
