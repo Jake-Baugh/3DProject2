@@ -49,14 +49,15 @@ Project::Project(HINSTANCE instance)
 	mDeferredRenderer.SetAmbientLight(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 	
 	const float RADIUS = 20;
-	D3DXVECTOR3 intensities[] = { D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR3(1.0f, 0.0f, 1.0f) };
+	const float INTENSITY = 0.6f;
+	D3DXVECTOR3 intensities[] = { D3DXVECTOR3(INTENSITY, 0.0f, 0.0f), D3DXVECTOR3(0.0f, INTENSITY, 0.0f), D3DXVECTOR3(0.0f, 0.0f, INTENSITY), D3DXVECTOR3(INTENSITY, 0.0f, INTENSITY) };
 	int pointLightCount = sizeof(intensities) / sizeof(intensities[0]);
 	for (int i = 0; i < pointLightCount; ++i)
 	{
 		double phi = 2.0 * D3DX_PI / pointLightCount;
 		
 		PointLight light;
-		light.Position = D3DXVECTOR4(RADIUS * cos(i * phi), 1.0f, RADIUS * sin(i * phi), 1.0f);
+		light.Position = D3DXVECTOR4(RADIUS * cos(i * phi), 10.0f, RADIUS * sin(i * phi), 1.0f);
 		light.Intensity = intensities[i];
 		light.Radius = 20.0f;
 
@@ -124,6 +125,10 @@ void Project::KeyPressed(Framework::ApplicationWindow* window, int keyCode)
 				mDebugFrustumDirection = mCamera.GetDirection();
 				mDrawableFrustum.Update(mCamera.GetPosition(), mCamera.GetDirection());
 			}
+		break;
+
+		case 'O':
+			mDeferredRenderer.ToggleSSAO(!mDeferredRenderer.GetSSAOToggle());
 		break;
 	}
 }

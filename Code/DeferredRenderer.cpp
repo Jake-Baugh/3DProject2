@@ -16,6 +16,8 @@ DeferredRenderer::DeferredRenderer(Framework::D3DContext* d3dContext, int width,
 	, mLightEffect(mDevice, "Resources/Effects/Light.fx")
 	, mBufferEffect(mDevice, "Resources/Effects/GBuffer.fx")
 	, mFullscreenQuad(mDevice)
+	, mRandomBuffer(mDevice, "noise.png")
+	, mSSAOToggle(true)
 {
 	// Create the fullscreen quad VB
 	DeferredRenderer::QuadVertex vertices[] = { { D3DXVECTOR2(-1.0f, -1.0f), D3DXVECTOR2(0.0f, 1.0f) }
@@ -120,6 +122,15 @@ DeferredRenderer::~DeferredRenderer() throw()
 	SafeRelease(mDepthStencilSRV);
 }
 
+void DeferredRenderer::ToggleSSAO(bool ssaoOn)
+{
+	mSSAOToggle = ssaoOn;
+}
+
+bool DeferredRenderer::GetSSAOToggle() const
+{
+	return mSSAOToggle;
+}
 
 void DeferredRenderer::SetDirectionalLight(const DirectionalLight& light)
 {
@@ -192,6 +203,9 @@ void DeferredRenderer::ApplyLightingPhase(const Camera::Camera& camera)
 	mDevice->OMSetRenderTargets(1, &mTargetView, NULL);
 	mDevice->ClearRenderTargetView(mTargetView, D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
 
+	mLightEffect.SetVariable("gView", camera.GetView());
+	mLightEffect.SetVariable("gProjection", camera.GetProjection());
+
 	mLightEffect.SetVariable("gAmbientLightIntensity", mAmbientLight);
 	mLightEffect.SetVariable("gEyePosition", camera.GetPosition());
 
@@ -199,6 +213,10 @@ void DeferredRenderer::ApplyLightingPhase(const Camera::Camera& camera)
 	mLightEffect.SetVariable("gPositionBuffer", mPositionSRV);
 	mLightEffect.SetVariable("gNormalBuffer", mNormalSRV);
 	mLightEffect.SetVariable("gMaterialBuffer", mMaterialSRV);
+	mLightEffect.SetVariable("gDepthBuffer", mDepthStencilSRV);
+
+	mLightEffect.SetVariable("gRandomBuffer", mRandomBuffer.GetShaderResourceView());
+	mLightEffect.SetVariable("gSSAOToggle", mSSAOToggle);
 
 	mFullscreenQuad.Bind();
 	for (unsigned int p = 0; p < mLightEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)

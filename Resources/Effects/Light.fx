@@ -33,11 +33,15 @@ struct PointLight
 	float Radius;
 };
 
+matrix gView;
+matrix gProjection;
 
 Texture2D gColorBuffer;
 Texture2D gPositionBuffer;
 Texture2D gNormalBuffer;
 Texture2D gMaterialBuffer;
+Texture2D gDepthBuffer;
+Texture2D gRandomBuffer;
 
 float3 gAmbientLightIntensity;
 DirectionalLight gDirectionalLight;
@@ -45,6 +49,15 @@ PointLight gPointLights[100];
 int gPointLightCount;
 
 float3 gEyePositionW;
+
+bool gSSAOToggle = true;
+int gAOSampleCount = 8;
+/*
+float gAORadius = 10.0f;
+float gAOScale = 1.0f;
+float gAOBias = 0.0f;
+float gAOIntensity = 6.0f;
+*/
 
 
 /** Render states */
@@ -110,13 +123,119 @@ float Fb(float dotp, float shininess)
 {
 	if(dotp > 0)
 	{
-		return pow(dotp, shininess);
+		return pow(abs(dotp), shininess);
 	}
 	else
 	{
 		return 0; // kill the lighting
 	}
 }
+
+/*
+float2 GetRandom(float uv)
+{
+	float2 random = gRandomBuffer.Sample(LinearSampler, uv).xy;
+	random = random * 2.0f - 1.0f;
+
+	return random;
+}
+
+float GetSSAOValue(float2 uv, float2 uvOffset, float3 positionW, float3 normalW)
+{
+	float3 occluderPositionW = gPositionBuffer.Sample(LinearSampler, uv + uvOffset).xyz;
+	float3 diff = occluderPositionW - positionW;
+	const float3 v = normalize(diff);
+	const float d = length(diff) * gAOScale;
+	return max(0.0f, dot(normalW, v) - gAOBias) * (1.0f / (1.0f + d)) * gAOIntensity;
+}
+
+float CalculateSSAO(float3 positionW, float3 normalW, float2 uv)
+{
+	//float2 random = normalize(saturate(gRandomBuffer.Sample(LinearSampler, uv).xy));
+	float depth = gDepthBuffer.Sample(LinearSampler, uv).x;
+	float2 random = GetRandom(uv);
+
+	int N = 4;
+	const float2 C_NEIGHBOURS[4] = { float2(1.0f, 0.0f), float2(-1.0f, 0.0f)
+								   , float2(0.0f, 1.0f), float2(0.0f, -1.0f) };
+
+	float ao = 0.0f;
+	float radius = gAORadius / depth;
+	for (int i = 0; i < N; ++i)
+	{
+		float2 coord[2] = { float2(0.0f, 0.0f), float2(0.0f, 0.0f) };
+		coord[0] = reflect(C_NEIGHBOURS[i], random) * radius;
+		coord[1] = float2(coord[0].x * 0.707 - coord[0].y * 0.707,
+						  coord[1].x * 0.707 + coord[1].y * 0.707);
+
+		ao += GetSSAOValue(uv, coord[0] * 0.25, positionW, normalW);
+		ao += GetSSAOValue(uv, coord[1] * 0.5, positionW, normalW);
+		ao += GetSSAOValue(uv, coord[0] * 0.75, positionW, normalW);
+		ao += GetSSAOValue(uv, coord[1], positionW, normalW);
+	}
+
+	ao /= N * 4.0f;
+
+	return ao;
+}
+*/
+
+float3 RandomOffset(float2 uv)
+{
+	return gRandomBuffer.Sample(LinearSampler, uv).xyz;
+}
+
+float OcclusionFunction(float distSquared)
+{
+	if (distSquared < 0.01f)
+		return 0.0f;
+	return 1.0f / (1.0f + distSquared);
+	//return exp(-distSquared);
+}
+
+float CalculateSSAO(float3 positionW, float3 normalW, float2 uv)
+{
+	float3 positionV = mul(float4(positionW, 1.0f), gView).xyz;
+	float3 normalV = mul(float4(normalW, 0.0f), gView).xyz;
+
+	float4 positionH = mul(float4(positionV, 1.0f), gProjection);
+	positionH /= positionH.w;
+
+	float ao = 0.0f;
+	float2 uvOffset = float2(1.0 / gAOSampleCount, 1.0 / gAOSampleCount);
+	for (int i = 0; i < gAOSampleCount; ++i)
+	{
+		// Randomize an offset, and make sure it points out of the plane
+		float3 randomOffset = RandomOffset(uv + uvOffset * i);
+		if (dot(randomOffset, normalV) <= 0.0f)
+			randomOffset = -randomOffset;
+			
+		// Store the randomized point
+		float3 offset = positionV + randomOffset;
+		
+		// Store the distance of the randomized point from the source
+		float3 offsetDistanceSquared = dot(randomOffset, randomOffset);
+
+		// Project the randomized point back to screen space
+		float4 projectionOffset = mul(float4(offset, 1.0f), gProjection);
+		offset = projectionOffset.xyz / projectionOffset.w;
+		//offset.xy = (offset.xy * 0.5) + 0.5f;
+
+		if (offset.z > positionH.z)
+		//if (gDepthBuffer.Sample(LinearSampler, projectionOffset.xy).r > gDepthBuffer.Sample(LinearSampler, uv).r)
+		{
+			// This randomized point occludes our source
+			ao += OcclusionFunction(offsetDistanceSquared);
+		}
+	}
+
+	// Average the AO samples
+	ao /= gAOSampleCount;
+
+	return ao;
+	//return RandomOffset(uv).x;
+}
+
 
 /** Shader implementation */
 PS_INPUT VS(VS_INPUT input)
@@ -166,6 +285,17 @@ float4 PS(PS_INPUT input) : SV_TARGET0
 	float4 glowColor = float4(sampledColor.w, sampledPosition.w, sampledNormal.w, 0.0f);
 	color = (0.8f * albedo) + (0.2f * color);
 	color += glowColor;
+
+	// calculate ssao
+	if (gSSAOToggle)
+	{
+		float ao = CalculateSSAO(posW, normalW, input.TexCoord);
+		//color *= 1.0f - ao;
+		//color *= ao;
+		//ao = 1.0f - ao;
+
+		return float4(ao, ao, ao, 1.0f);
+	}
 	
 	return color;
 

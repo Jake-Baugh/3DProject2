@@ -8,6 +8,7 @@
 #include <Framework\VertexBuffer.hpp>
 #include <Helper\Global.hpp>
 #include <Camera\Camera.hpp>
+#include <Resources\Texture.hpp>
 
 struct DirectionalLight
 {
@@ -38,6 +39,9 @@ public:
 	void SetDirectionalLight(const DirectionalLight& light);
 	size_t AddPointLight(const PointLight& light);
 	void SetAmbientLight(const D3DXVECTOR3& light);
+
+	void ToggleSSAO(bool ssaoOn);
+	bool GetSSAOToggle() const;
 
 	void BeginDeferredState();
 	void EndDeferredState();
@@ -102,6 +106,13 @@ private:
 
 	// Contains the G buffer shader resource views: color, normal and depth.
 	std::vector<ID3D10ShaderResourceView*> mShaderResourceViews;
+
+
+	// A texture with noise, used for SSAO
+	Resources::Texture mRandomBuffer;
+
+	// Whether SSAO should be on or off
+	bool mSSAOToggle;
 
 
 	// Keeps track of the lights in the scene

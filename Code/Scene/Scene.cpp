@@ -15,9 +15,9 @@ namespace Scene
 		mModels.push_back(new Resources::ModelObj(mDevice, "quadReal.obj", "glow.png"));
 		mModels.push_back(new Resources::ModelObj(mDevice, "ringReal.obj", "glow.png"));
 		mModels.push_back(new Resources::ModelObj(mDevice, "triangleReal.obj", "glow.png"));
+		mBTHLogo = new Resources::ModelObj(mDevice, "bth.obj", "glow.png");
 
-
-		const float RADIUS = 50.0f;
+		const float RADIUS = 120.0f;
 		const int N = 15;
 		const double DT = 2 * D3DX_PI / N;
 		
@@ -27,6 +27,14 @@ namespace Scene
 			D3DXMatrixTranslation(&world, RADIUS * cos(i * DT), 2.0f, RADIUS * sin(i * DT));
 
 			mGeometry.push_back(new Geometry(mDevice, mModels[i % mModels.size()], world));
+		}
+
+		D3DXMATRIX world;
+		D3DXMatrixRotationX(&world, D3DX_PI * 0.5f);
+		mGeometry.push_back(new Geometry(mDevice, mBTHLogo, world));
+
+		for (int i = 0; i < mGeometry.size(); ++i)
+		{
 			mQuadTree.AddGeometry(mGeometry[i]);
 		}
 	}
@@ -37,6 +45,7 @@ namespace Scene
 			SafeDelete(mGeometry[i]);
 		for (int i = 0; i < mModels.size(); ++i)
 			SafeDelete(mModels[i]);
+		SafeDelete(mBTHLogo);
 	}
 
 	void Scene::Draw(const Camera::Camera& camera, const Helper::Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection)
