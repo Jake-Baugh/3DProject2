@@ -13,7 +13,7 @@ namespace Resources
 	class ModelObj
 	{
 	public:
-		ModelObj(ID3D10Device* device, const std::string& textureFilename, const std::string& glowmapFilename);
+		ModelObj(ID3D10Device* device, const std::string& objectFilename, const std::string& glowmapFilename);
 		~ModelObj() throw();
 
 		// Bind the model's associated vertex buffer to an input slot

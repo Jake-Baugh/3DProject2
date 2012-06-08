@@ -1,3 +1,4 @@
+#include <Resources\ModelObj.hpp>
 #include <Scene\Scene.hpp>
 
 namespace Scene
@@ -10,12 +11,45 @@ namespace Scene
 		, mGround(mDevice, C_SCENE_QUAD.GetWidth() * 0.5f)
 	{
 		// Hard code some geometry
+		mModels.push_back(new Resources::ModelObj(mDevice, "crossReal.obj", "glow.png"));
+		mModels.push_back(new Resources::ModelObj(mDevice, "quadReal.obj", "glow.png"));
+		mModels.push_back(new Resources::ModelObj(mDevice, "ringReal.obj", "glow.png"));
+		mModels.push_back(new Resources::ModelObj(mDevice, "triangleReal.obj", "glow.png"));
+
+
+		const float RADIUS = 50.0f;
+		const int N = 15;
+		const double DT = 2 * D3DX_PI / N;
 		
-		//mGeometry.push_back(Geometry(mDevice, 
+		for (int i = 0; i < N; ++i)
+		{
+			D3DXMATRIX world;
+			D3DXMatrixTranslation(&world, RADIUS * cos(i * DT), 2.0f, RADIUS * sin(i * DT));
+
+			mGeometry.push_back(new Geometry(mDevice, mModels[i % mModels.size()], world));
+			mQuadTree.AddGeometry(mGeometry[i]);
+		}
+	}
+
+	Scene::~Scene() throw()
+	{
+		for (int i = 0; i < mGeometry.size(); ++i)
+			SafeDelete(mGeometry[i]);
+		for (int i = 0; i < mModels.size(); ++i)
+			SafeDelete(mModels[i]);
 	}
 
 	void Scene::Draw(const Camera::Camera& camera, const Helper::Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection)
 	{
+		/*
+		mGround.Draw(camera);
+		size_t size = mGeometry.size();
+		for (int i = 0; i < size; ++i)
+		{
+			mGeometry[i]->Draw(camera);
+		}
+		*/
+
 		std::set<Geometry*> visibleGeometry;
 
 		mQuadTree.GetVisibleGeometry(frustum, frustumPosition, frustumDirection, visibleGeometry);

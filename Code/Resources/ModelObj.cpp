@@ -9,10 +9,10 @@
 
 namespace Resources
 {
-	ModelObj::ModelObj(ID3D10Device* device, const std::string& textureFilename, const std::string& glowmapFilename)
+	ModelObj::ModelObj(ID3D10Device* device, const std::string& objectFilename, const std::string& glowmapFilename)
 		: mDevice(device)
 		, mEffect(device, "Resources/Effects/ModelObj.fx")
-		, mData(device, textureFilename)
+		, mData(device, objectFilename)
 		, mScale(1.0f)
 		, mTintColor(D3DXCOLOR(1.0, 1.0, 1.0, 1.0))
 		, mGlowMap(NULL)

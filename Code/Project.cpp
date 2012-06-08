@@ -26,6 +26,9 @@ Project::ProjectionDescription::ProjectionDescription(unsigned int clientWidth, 
 
 Project::Project(HINSTANCE instance)
 	: Game(instance, WindowDescription().Description, ContextDescription().Description)
+	, mUseDebugFrustum(false)
+	, mDebugFrustumPosition(0.0f, 0.0f, 0.0f)
+	, mDebugFrustumDirection(0.0f, 0.0f, 0.0f)
 	, mProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight())
 	, mCameraSpline(D3DXVECTOR3(-20, 30, -20), D3DXVECTOR3(-20, 0, -20), D3DXVECTOR3(20, 60, 20), D3DXVECTOR3(20,30,20))
 	, mCamera(mProjectionDescription.Frustum.CreatePerspectiveProjection(), D3DXVECTOR3(0.0f, 30.0f, -20.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f))
@@ -112,8 +115,15 @@ void Project::KeyPressed(Framework::ApplicationWindow* window, int keyCode)
 			mBufferToRender = DeferredRenderer::C_GBUFFER_DEPTH;
 		break;
 
-		case 'K':
-			mDrawableFrustum.Update(mCamera.GetPosition(), mCamera.GetDirection());
+		case 'F':
+			mUseDebugFrustum = !mUseDebugFrustum;
+			
+			if (mUseDebugFrustum)
+			{
+				mDebugFrustumPosition = mCamera.GetPosition();
+				mDebugFrustumDirection = mCamera.GetDirection();
+				mDrawableFrustum.Update(mCamera.GetPosition(), mCamera.GetDirection());
+			}
 		break;
 	}
 }
@@ -131,7 +141,14 @@ void Project::Draw(float dt)
 	// Deferred stage
 	mDeferredRenderer.BeginDeferredState();
 
-	mScene.Draw(mCamera, mProjectionDescription.Frustum, mCamera.GetPosition(), mCamera.GetDirection());
+	if (mUseDebugFrustum)
+	{
+		mScene.Draw(mCamera, mProjectionDescription.Frustum, mDebugFrustumPosition, mDebugFrustumDirection);
+	}
+	else
+	{
+		mScene.Draw(mCamera, mProjectionDescription.Frustum, mCamera.GetPosition(), mCamera.GetDirection());
+	}
 
 	D3DXMATRIX world;
 	//D3DXMatrixTranslation(&world, 0, 10, 0);
@@ -142,8 +159,10 @@ void Project::Draw(float dt)
 
 	//mCameraCurve.Draw(mCamera);
 
-	mDrawableFrustum.Draw(mCamera);
-
+	if (mUseDebugFrustum)
+	{
+		mDrawableFrustum.Draw(mCamera);
+	}
 
 	mDeferredRenderer.EndDeferredState();
 	mDeferredRenderer.ApplyLightingPhase(mCamera);

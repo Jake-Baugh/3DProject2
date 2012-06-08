@@ -34,7 +34,7 @@ namespace Scene
 			mGeometry.push_back(geometry);
 		else
 		{
-			const Helper::AABB3f geoBox = geometry->GetAABB();
+			const Helper::AABB3f& geoBox = geometry->GetAABB();
 			Helper::AABB2f geoQuad(Helper::Point2f(geoBox.Corners[0].X, geoBox.Corners[0].Z), Helper::Point2f(geoBox.Corners[1].X, geoBox.Corners[1].Z));
 
 			for (int i = 0; i < mChildren.size(); i++)
@@ -61,7 +61,8 @@ namespace Scene
 		if (mChildren.empty())
 		{
 			for (int i = 0; i < mGeometry.size(); ++i)
-				outVisible.insert(mGeometry[i]);
+				if (Helper::FrustumVsAABB(frustum, frustumPosition, frustumDirection, mGeometry[i]->GetAABB()) != Helper::Collision::Outside)
+					outVisible.insert(mGeometry[i]);
 		}
 		else
 		{

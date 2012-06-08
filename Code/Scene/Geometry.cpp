@@ -29,6 +29,7 @@ namespace Scene
 
 	void Geometry::Draw(const Camera::Camera& camera)
 	{
+		mModel->Bind();
 		mModel->Draw(mWorld, camera);
 	}
 

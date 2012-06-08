@@ -50,6 +50,10 @@ private:
 		ProjectionDescription(unsigned int clientWidth, unsigned int clientHeight);
 	};
 
+	bool mUseDebugFrustum;
+	D3DXVECTOR3 mDebugFrustumPosition;
+	D3DXVECTOR3 mDebugFrustumDirection;
+
 	ProjectionDescription mProjectionDescription;
 	BezierCurve mCameraSpline;
 	Camera::Camera mCamera;

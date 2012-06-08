@@ -12,6 +12,7 @@ namespace Scene
 	{
 	public:
 		Scene(ID3D10Device* device);
+		~Scene() throw();
 
 		void Draw(const Camera::Camera& camera, const Helper::Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection);
 	private:
@@ -21,8 +22,8 @@ namespace Scene
 
 		QuadNode mQuadTree;
 		Ground mGround;
-		std::vector<Resources::ModelObj> mModels;
-		std::vector<Geometry> mGeometry;
+		std::vector<Resources::ModelObj*> mModels;
+		std::vector<Geometry*> mGeometry;
 	};
 }
 
