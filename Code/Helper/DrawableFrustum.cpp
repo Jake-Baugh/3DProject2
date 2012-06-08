@@ -5,14 +5,38 @@ namespace Helper
 	DrawableFrustum::DrawableFrustum(ID3D10Device* device, const Helper::Frustum& frustum, const D3DXVECTOR3& origin, const D3DXVECTOR3& direction)
 		: mDevice(device)
 		, mFrustum(frustum)
+		, mFrustumNormals(6)
+		, mFrustumPositions(6)
 		, mOrigin(origin)
 		, mDirection(direction)
-		, mVertexBuffer(mDevice)
+		, mNormalBuffer(mDevice)
+		, mFrustumBuffer(mDevice)
 		, mEffect(mDevice, "Resources/Effects/Debug.fx")
 	{
 		Framework::Effect::InputLayoutVector inputLayout;
 		inputLayout.push_back(Framework::Effect::InputLayoutElement("POSITION", DXGI_FORMAT_R32G32B32_FLOAT));
 		mEffect.GetTechniqueByIndex(0).GetPassByIndex(0).SetInputLayout(inputLayout);
+
+
+		
+		D3DXVECTOR3 normalVertices[] = { D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f)
+									   , D3DXVECTOR3(-0.1f, 0.0f, 0.75f), D3DXVECTOR3(0.0f, 0.0f, 1.0f)
+									   , D3DXVECTOR3(0.1f, 0.0f, 0.75f), D3DXVECTOR3(0.0f, 0.0f, 1.0f) };
+		/*
+		D3DXVECTOR3 normalVertices[] = { D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f)
+									   , D3DXVECTOR3(0.75f, 0.0f, -0.1f), D3DXVECTOR3(1.0f, 0.0f, 0.0f)
+									   , D3DXVECTOR3(0.75f, 0.0f, 0.1f), D3DXVECTOR3(1.0f, 0.0f, 0.0f) };
+		*/
+
+		Framework::VertexBuffer::Description normalBufferDescription;
+		normalBufferDescription.ElementCount = 6;
+		normalBufferDescription.ElementSize = sizeof(D3DXVECTOR3);
+		normalBufferDescription.FirstElementPointer = normalVertices;
+		normalBufferDescription.Topology = Framework::Topology::LineList;
+		normalBufferDescription.Usage = Framework::Usage::Default;
+
+		mNormalBuffer.SetData(normalBufferDescription, NULL);
+
 
 		SetFrustum(frustum);
 		UpdateWorld();
@@ -72,7 +96,50 @@ namespace Helper
 		bufferDescription.Topology = Framework::Topology::LineList;
 		bufferDescription.Usage = Framework::Usage::Default;
 
-		mVertexBuffer.SetData(bufferDescription, NULL);
+		mFrustumBuffer.SetData(bufferDescription, NULL);
+
+
+		/*
+		mFrustumNormals[0] = D3DXVECTOR3(0.0, 0.0, -1.0);
+		mFrustumNormals[1] = D3DXVECTOR3(0.0, 0.0, 1.0);
+		mFrustumNormals[2] = D3DXVECTOR3(-1.0, 0.0, 0.0);
+		mFrustumNormals[3] = D3DXVECTOR3(1.0, 0.0, 0.0);
+		mFrustumNormals[4] = D3DXVECTOR3(0.0, 1.0, 0.0);
+		mFrustumNormals[5] = D3DXVECTOR3(0.0, -1.0, 0.0);
+		*/
+
+		
+		// Front & Back
+		D3DXVec3Cross(&mFrustumNormals[0], &(nearVertices[2] - nearVertices[0]),
+					  &(nearVertices[1] - nearVertices[0]));
+		mFrustumPositions[0] = D3DXVECTOR3(0.0f, 0.0f, nearOrigin.z - 0.1f);
+
+		mFrustumNormals[1] = -mFrustumNormals[0];
+		mFrustumPositions[1] = D3DXVECTOR3(0.0f, 0.0f, nearOrigin.z + 0.1f);
+
+
+		// Left & Right
+		D3DXVec3Cross(&mFrustumNormals[2], &(farVertices[2] - farVertices[0]),
+					  &(nearVertices[0] - farVertices[0]));
+		mFrustumPositions[2] = D3DXVECTOR3(-halfWidthNear, 0.0f, nearOrigin.z);
+
+		D3DXVec3Cross(&mFrustumNormals[3], &(nearVertices[3] - nearVertices[1]),
+					  &(farVertices[1] - nearVertices[1]));
+		mFrustumPositions[3] = D3DXVECTOR3(halfWidthNear, 0.0f, nearOrigin.z);
+
+		// Top & Bottom
+		D3DXVec3Cross(&mFrustumNormals[4], &(nearVertices[3] - nearVertices[2]), 
+					  &(farVertices[2] - nearVertices[2]));
+		mFrustumPositions[4] = D3DXVECTOR3(0.0f, halfHeightNear, nearOrigin.z);
+
+		D3DXVec3Cross(&mFrustumNormals[5], &(farVertices[1] - farVertices[0]),
+					  &(nearVertices[0] - farVertices[0]));
+		mFrustumPositions[5] = D3DXVECTOR3(0.0f, -halfHeightNear, nearOrigin.z);
+
+		for (unsigned int i = 0; i < mFrustumNormals.size(); ++i)
+		{
+			D3DXVec3Normalize(&mFrustumNormals[i], &mFrustumNormals[i]);
+		}
 	}
 
 
@@ -81,11 +148,25 @@ namespace Helper
 		mEffect.SetVariable("gWorld", mWorld);
 		mEffect.SetVariable("gMVP", mWorld * camera.GetViewProjection());
 
-		mVertexBuffer.Bind();
+		mFrustumBuffer.Bind();
 		for (unsigned int p = 0; p < mEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)
 		{
 			mEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mDevice);
-			mDevice->Draw(mVertexBuffer.GetElementCount(), 0);
+			mDevice->Draw(mFrustumBuffer.GetElementCount(), 0);
+		}
+
+		mNormalBuffer.Bind();
+		for (unsigned int i = 0; i < mFrustumNormals.size(); ++i)
+		{
+			D3DXMATRIX world = GetNormalMatrix(mFrustumPositions[i], mFrustumNormals[i]);
+			mEffect.SetVariable("gWorld", world * mWorld);
+			mEffect.SetVariable("gMVP", world * mWorld * camera.GetViewProjection());
+
+			for (unsigned int p = 0; p < mEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)
+			{
+				mEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mDevice);
+				mDevice->Draw(mNormalBuffer.GetElementCount(), 0);
+			}
 		}
 	}
 
@@ -122,5 +203,32 @@ namespace Helper
 		mWorld.m[1][3] = 0.0f;
 		mWorld.m[2][3] = 0.0f;
 		mWorld.m[3][3] = 1.0f;
+	}
+
+	D3DXMATRIX DrawableFrustum::GetNormalMatrix(const D3DXVECTOR3& position, const D3DXVECTOR3& normal) const
+	{
+		float length = D3DXVec3Length(&normal);
+		float phi = std::asin(normal.y / length);
+		float theta = 0;
+
+		if (normal.x < 10e-6 && normal.x > -10e-6)
+			if (normal.z > 0)
+				theta = D3DX_PI * 0.5;
+			else
+				theta = 3.0 * D3DX_PI * 0.5;
+		else
+			theta = std::atan2(normal.z, normal.x);
+		theta -= D3DX_PI * 0.5;
+
+		D3DXMATRIX rotation, translation, scale;
+		D3DXMatrixRotationYawPitchRoll(&rotation, theta, phi, 0.0f);
+		//D3DXMatrixRotationY(&rotation, theta);
+		D3DXMatrixTranslation(&translation, position.x, position.y, position.z);
+		D3DXMatrixScaling(&scale, length, length, length);
+
+		//return rotation * translation * scale;
+		return rotation * translation;
+		//return rotation * scale * translation;
+		//return translation;
 	}
 }
