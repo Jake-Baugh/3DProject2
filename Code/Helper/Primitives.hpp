@@ -71,6 +71,18 @@ namespace Helper
 	typedef Point3<float> Point3f;
 
 
+	template <typename T>
+	struct Interval
+	{
+		T Min;
+		T Max;
+
+		Interval();
+		Interval(T min, T max);
+
+		bool Overlaps(const Interval& rhs) const;
+	};
+
 
 	/**
 		Define an axis aligned bounding box, in 2D space
@@ -88,6 +100,8 @@ namespace Helper
 		T GetBottom() const;
 		T GetWidth() const;
 		T GetHeight() const;
+
+		bool Intersects(const AABB2<T>& rhs) const;
 	};
 
 	typedef AABB2<int> AABB2i;
@@ -141,7 +155,14 @@ namespace Helper
 		D3DXMATRIX CreatePerspectiveProjection() const;
 	};
 
-	bool FrustumVsAABB(const Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection, const AABB3f& aabb, const D3DXVECTOR3& translation);
+	enum Collision
+	{
+		Outside,
+		Intersects,
+		Inside
+	};
+
+	Collision FrustumVsAABB(const Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection, const AABB3f& aabb);
 
 
 	/**
@@ -269,6 +290,30 @@ namespace Helper
 	}
 
 
+	template <typename T>
+	Interval<T>::Interval()
+		: Min(0)
+		, Max(0)
+	{}
+
+	template <typename T>
+	Interval<T>::Interval(T min, T max)
+		: Min(min)
+		, Max(max)
+	{}
+
+	template <typename T>
+	bool Interval<T>::Overlaps(const Interval& rhs) const
+	{
+		T length1 = Max - Min;
+		T length2 = rhs.Max - rhs.Min;
+
+		T totLength = max(Max, rhs.Max) - min(Min, rhs.Min);
+
+		return (totLength < length1 + length2);
+	}
+
+
 
 
 	template <typename T>
@@ -312,6 +357,15 @@ namespace Helper
 	T AABB2<T>::GetHeight() const
 	{
 		return std::abs(Corners[0].Y - Corners[1].Y);
+	}
+
+	template <typename T>
+	bool AABB2<T>::Intersects(const AABB2<T>& rhs) const
+	{
+		Interval<T> intervalsX[] = { Interval<T>(Corners[0].X, Corners[1].X), Interval<T>(rhs.Corners[0].X, rhs.Corners[1].X) };
+		Interval<T> intervalsY[] = { Interval<T>(Corners[0].Y, Corners[1].Y), Interval<T>(rhs.Corners[0].Y, rhs.Corners[1].Y) };
+
+		return (intervalsX[0].Overlaps(intervalsX[1]) && intervalsY[0].Overlaps(intervalsY[1]));
 	}
 
 

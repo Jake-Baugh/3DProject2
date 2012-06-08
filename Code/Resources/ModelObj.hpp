@@ -29,6 +29,8 @@ namespace Resources
 		// Set the tint colour of the object
 		void SetTintColor(D3DXCOLOR newColor);
 
+		const Helper::AABB3f& GetAABB() const;
+
 	private:
 		ID3D10Device* mDevice;
 		StaticModelData mData;

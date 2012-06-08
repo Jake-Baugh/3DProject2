@@ -159,7 +159,7 @@
     <ClCompile Include="Code\Framework\Game.cpp" />
     <ClCompile Include="Code\Framework\GameTime.cpp" />
     <ClCompile Include="Code\Framework\VertexBuffer.cpp" />
-    <ClCompile Include="Code\Ground.cpp" />
+    <ClCompile Include="Code\Scene\Ground.cpp" />
     <ClCompile Include="Code\Helper\BezierCurve.cpp" />
     <ClCompile Include="Code\Camera\Camera.cpp" />
     <ClCompile Include="Code\Helper\DrawableBox.cpp" />
@@ -168,6 +168,8 @@
     <ClCompile Include="Code\Helper\GameFont.cpp" />
     <ClCompile Include="Code\Helper\MorphAnimation.cpp" />
     <ClCompile Include="Code\Helper\Primitives.cpp" />
+    <ClCompile Include="Code\Scene\Geometry.cpp" />
+    <ClCompile Include="Code\Scene\QuadTree.cpp" />
     <ClCompile Include="Code\Helper\r2tk\r2-assert.cpp" />
     <ClCompile Include="Code\Helper\r2tk\r2-exception.cpp" />
     <ClCompile Include="Code\main.cpp" />
@@ -176,6 +178,7 @@
     <ClCompile Include="Code\Resources\ModelObj.cpp" />
     <ClCompile Include="Code\Resources\StaticModelData.cpp" />
     <ClCompile Include="Code\Resources\Texture.cpp" />
+    <ClCompile Include="Code\Scene\Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
@@ -204,7 +207,7 @@
     <ClInclude Include="Code\Framework\Game.hpp" />
     <ClInclude Include="Code\Framework\GameTime.hpp" />
     <ClInclude Include="Code\Framework\VertexBuffer.hpp" />
-    <ClInclude Include="Code\Ground.hpp" />
+    <ClInclude Include="Code\Scene\Ground.hpp" />
     <ClInclude Include="Code\Helper\BezierCurve.hpp" />
     <ClInclude Include="Code\Camera\Camera.hpp" />
     <ClInclude Include="Code\Helper\DrawableBox.hpp" />
@@ -214,6 +217,8 @@
     <ClInclude Include="Code\Helper\Global.hpp" />
     <ClInclude Include="Code\Helper\MorphAnimation.hpp" />
     <ClInclude Include="Code\Helper\Primitives.hpp" />
+    <ClInclude Include="Code\Scene\Geometry.hpp" />
+    <ClInclude Include="Code\Scene\QuadTree.hpp" />
     <ClInclude Include="Code\Helper\r2tk\r2-assert.hpp" />
     <ClInclude Include="Code\Helper\r2tk\r2-exception.hpp" />
     <ClInclude Include="Code\Helper\r2tk\r2-global.hpp" />
@@ -223,6 +228,7 @@
     <ClInclude Include="Code\Resources\ModelObj.hpp" />
     <ClInclude Include="Code\Resources\StaticModelData.hpp" />
     <ClInclude Include="Code\Resources\Texture.hpp" />
+    <ClInclude Include="Code\Scene\Scene.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

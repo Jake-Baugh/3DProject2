@@ -105,4 +105,9 @@ namespace Resources
 	{
 		mTintColor = newColor;
 	}
+
+	const Helper::AABB3f& ModelObj::GetAABB() const
+	{
+		return mData.Box;
+	}
 }

@@ -10,9 +10,9 @@
 #include <Resources\ModelObj.hpp>
 #include <Camera\Camera.hpp>
 #include <Camera\CameraController.hpp>
-#include <Ground.hpp>
 #include <DeferredRenderer.hpp>
 #include <Helper\MorphAnimation.hpp>
+#include <Scene\Scene.hpp>
 
 // DEBUG
 #include <Helper\DrawableSpline.hpp>
@@ -50,6 +50,7 @@ private:
 		ProjectionDescription(unsigned int clientWidth, unsigned int clientHeight);
 	};
 
+	ProjectionDescription mProjectionDescription;
 	BezierCurve mCameraSpline;
 	Camera::Camera mCamera;
 	Camera::CameraController* mCameraController;
@@ -57,18 +58,12 @@ private:
 	DeferredRenderer mDeferredRenderer;
 	int mBufferToRender;
 
+	Scene::Scene mScene;
 	Helper::DrawableFrustum mDrawableFrustum;
-	Resources::ModelObj mModel;
 	Helper::MorphAnimation* mAnimation;
-	Ground mGround;
-	BezierCurve mCurve;
-	Framework::VertexBuffer mCurveBuffer;
-	Framework::Effect::Effect mCurveEffect;
 
 	// DEBUG
 	Helper::DrawableSpline mCameraCurve;
-
-	float mPacmanT;
 };
 
 #endif

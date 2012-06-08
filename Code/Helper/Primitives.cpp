@@ -124,39 +124,36 @@ namespace Helper
 		return Where::In;
 	}
 	
-	bool FrustumVsAABB(const Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection, const AABB3f& aabb, const D3DXVECTOR3& translation)
+	Collision FrustumVsAABB(const Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection, const AABB3f& aabb)
 	{
+		Collision result = Collision::Outside;
+
 		std::vector<D3DXVECTOR3> boxVertices;
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y, aabb.Corners[0].Z) + translation);
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y, aabb.Corners[0].Z) + translation);
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[0].Z) + translation);
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[0].Z) + translation);
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y, aabb.Corners[1].Z) + translation);
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y, aabb.Corners[1].Z) + translation);
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[1].Z) + translation);
-		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[1].Z) + translation);
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y, aabb.Corners[0].Z));
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y, aabb.Corners[0].Z));
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[0].Z));
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[0].Z));
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y, aabb.Corners[1].Z));
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y, aabb.Corners[1].Z));
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X, aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[1].Z));
+		boxVertices.push_back(D3DXVECTOR3(aabb.Corners[0].X + aabb.GetWidth(), aabb.Corners[0].Y + aabb.GetHeight(), aabb.Corners[1].Z));
 
 
-		int wheres[] = {0, 0, 0, 0, 0, 0};
+		int wheres[] = {0, 0, 0, 0, 0, 0, 0};
 		
 
 		for (int i = 0; i < boxVertices.size(); ++i)
-		{
-			switch(Where w = PointInFrustum(frustum, frustumPosition, frustumDirection, boxVertices[i]))
-			{
-			case Where::In:
-				return true;
-			default:
-				wheres[w]++;
-			}
-		}
+			wheres[PointInFrustum(frustum, frustumPosition, frustumDirection, boxVertices[i])]++;
 
-		for (int i = 0; i < 6; ++i)
-		{
+		if (wheres[Where::In] == boxVertices.size())
+			return Collision::Inside;
+
+		for (int i = 0; i < 7; ++i)
 			if (wheres[i] > 0 && wheres[i] < boxVertices.size())
-				return true;
-		}
-		return false;
+				return Collision::Intersects;
+
+
+		return Collision::Outside;
 
 		//TransformFrustum(frustum, frustumPosition, frustumDirection, nearFrustumVertices, farFrustumVertices);
 

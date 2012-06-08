@@ -24,19 +24,23 @@ namespace Camera
 		if (currentInput.Keyboard.Keys['S'] || currentInput.Keyboard.Keys[VK_DOWN])
 			moveForward = -1;
 		if (currentInput.Keyboard.Keys['A'] || currentInput.Keyboard.Keys[VK_LEFT])
-			rotateLeft = 1;
+			moveRight = -1;
 		if (currentInput.Keyboard.Keys['D'] || currentInput.Keyboard.Keys[VK_RIGHT])
-			rotateLeft = -1;
-
-		if (currentInput.Keyboard.Keys['E'])
 			moveRight = 1;
-		if (currentInput.Keyboard.Keys['Q'])
+
+		if (currentInput.Keyboard.Keys[VK_NUMPAD9])
+			moveRight = 1;
+		if (currentInput.Keyboard.Keys[VK_NUMPAD7])
 			moveRight = -1;
 		
 		if (currentInput.Keyboard.Keys[VK_NUMPAD8])
 			rotateUp = 1;
 		if (currentInput.Keyboard.Keys[VK_NUMPAD2])
 			rotateUp = -1;
+		if (currentInput.Keyboard.Keys[VK_NUMPAD4])
+			rotateLeft = 1;
+		if (currentInput.Keyboard.Keys[VK_NUMPAD6])
+			rotateLeft = -1;
 
 
 		// Get the polar angles of the current camera direction and rotate it
