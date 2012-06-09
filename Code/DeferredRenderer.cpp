@@ -42,7 +42,6 @@ DeferredRenderer::DeferredRenderer(Framework::D3DContext* d3dContext, int width,
 
 
 	// Create the G buffers
-	mTargetBuffer = CreateTexture(DXGI_FORMAT_R32G32B32A32_FLOAT, D3D10_BIND_RENDER_TARGET);
 	mColorBuffer = CreateTexture(DXGI_FORMAT_R32G32B32A32_FLOAT, D3D10_BIND_RENDER_TARGET);
 	mPositionBuffer = CreateTexture(DXGI_FORMAT_R32G32B32A32_FLOAT, D3D10_BIND_RENDER_TARGET);
 	mNormalBuffer = CreateTexture(DXGI_FORMAT_R32G32B32A32_FLOAT, D3D10_BIND_RENDER_TARGET);
@@ -57,7 +56,6 @@ DeferredRenderer::DeferredRenderer(Framework::D3DContext* d3dContext, int width,
 
 
 	// Create the render target views
-	mTargetView = CreateRenderTargetView(mTargetBuffer);
 	mColorView = CreateRenderTargetView(mColorBuffer);
 	mPositionView = CreateRenderTargetView(mPositionBuffer);
 	mNormalView = CreateRenderTargetView(mNormalBuffer);
@@ -80,7 +78,6 @@ DeferredRenderer::DeferredRenderer(Framework::D3DContext* d3dContext, int width,
 
 
 	// Create the shader resource views
-	mTargetSRV = CreateShaderResourceView(mTargetBuffer, DXGI_FORMAT_R32G32B32A32_FLOAT);
 	mColorSRV = CreateShaderResourceView(mColorBuffer, DXGI_FORMAT_R32G32B32A32_FLOAT);
 	mPositionSRV = CreateShaderResourceView(mPositionBuffer, DXGI_FORMAT_R32G32B32A32_FLOAT);
 	mNormalSRV = CreateShaderResourceView(mNormalBuffer, DXGI_FORMAT_R32G32B32A32_FLOAT);
@@ -96,10 +93,6 @@ DeferredRenderer::DeferredRenderer(Framework::D3DContext* d3dContext, int width,
 
 DeferredRenderer::~DeferredRenderer() throw()
 {
-	SafeRelease(mTargetBuffer);
-	SafeRelease(mTargetView);
-	SafeRelease(mTargetSRV);
-
 	SafeRelease(mColorBuffer);
 	SafeRelease(mColorView);
 	SafeRelease(mColorSRV);
@@ -223,11 +216,6 @@ void DeferredRenderer::EndForwardState()
 	mD3DContext->ResetRenderTarget();
 }
 
-void DeferredRenderer::RenderFinalComposition()
-{
-	RenderBuffer(GetFinalComposition());
-}
-
 void DeferredRenderer::RenderBuffer(ID3D10ShaderResourceView* buffer)
 {
 	bool renderDepth = buffer == mDepthStencilSRV;
@@ -241,11 +229,6 @@ void DeferredRenderer::RenderBuffer(ID3D10ShaderResourceView* buffer)
 		mBufferEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mDevice);
 		mDevice->Draw(mFullscreenQuad.GetElementCount(), 0);
 	}
-}
-
-ID3D10ShaderResourceView* DeferredRenderer::GetFinalComposition() const
-{
-	return mTargetSRV;
 }
 
 ID3D10ShaderResourceView* DeferredRenderer::GetColorBuffer() const

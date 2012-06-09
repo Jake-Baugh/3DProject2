@@ -46,10 +46,8 @@ public:
 	void BeginForwardState();
 	void EndForwardState();
 
-	void RenderFinalComposition();
 	void RenderBuffer(ID3D10ShaderResourceView* buffer);
 
-	ID3D10ShaderResourceView* GetFinalComposition() const;
 	ID3D10ShaderResourceView* GetColorBuffer() const;
 	ID3D10ShaderResourceView* GetPositionBuffer() const;
 	ID3D10ShaderResourceView* GetNormalBuffer() const;
@@ -74,7 +72,6 @@ private:
 	int mHeight;
 
 	// The buffers holding the G-buffer data.
-	ID3D10Texture2D* mTargetBuffer;
 	ID3D10Texture2D* mColorBuffer;
 	ID3D10Texture2D* mPositionBuffer;
 	ID3D10Texture2D* mNormalBuffer;
@@ -82,7 +79,6 @@ private:
 	ID3D10Texture2D* mDepthStencilBuffer;
 
 	// Render/Depth views for rendering to the buffers
-	ID3D10RenderTargetView* mTargetView;
 	ID3D10RenderTargetView* mColorView;
 	ID3D10RenderTargetView* mPositionView;
 	ID3D10RenderTargetView* mNormalView;
@@ -90,7 +86,6 @@ private:
 	ID3D10DepthStencilView* mDepthStencilView;
 
 	// Shader resource views for reading from the buffers
-	ID3D10ShaderResourceView* mTargetSRV;
 	ID3D10ShaderResourceView* mColorSRV;
 	ID3D10ShaderResourceView* mPositionSRV;
 	ID3D10ShaderResourceView* mNormalSRV;

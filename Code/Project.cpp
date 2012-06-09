@@ -171,8 +171,6 @@ void Project::Draw(float dt)
 	mScene.DrawForwarded(mCamera);
 	mDeferredRenderer.EndForwardState();
 
-	if (mBufferToRender == -1)
-		mDeferredRenderer.RenderFinalComposition();
-	else
+	if (mBufferToRender >= 0)
 		mDeferredRenderer.RenderBuffer(mDeferredRenderer.GetGBufferByIndex(mBufferToRender));
 }
