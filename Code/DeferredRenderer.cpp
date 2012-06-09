@@ -7,6 +7,7 @@ const int DeferredRenderer::C_GBUFFER_POSITION = 1;
 const int DeferredRenderer::C_GBUFFER_NORMAL = 2;
 const int DeferredRenderer::C_GBUFFER_MATERIAL = 3;
 const int DeferredRenderer::C_GBUFFER_DEPTH = 4;
+const int DeferredRenderer::C_GBUFFER_COUNT = 5;
 
 DeferredRenderer::DeferredRenderer(Framework::D3DContext* d3dContext, int width, int height)
 	: mD3DContext(d3dContext)
@@ -186,11 +187,12 @@ void DeferredRenderer::EndDeferredState()
 
 void DeferredRenderer::ApplyLightingPhase(const Camera::Camera& camera)
 {
+	ID3D10RenderTargetView* backBuffer = mD3DContext->GetBackBufferView();
 	ID3D10ShaderResourceView* nullSRV = NULL;
 
 	mDevice->PSSetShaderResources(0, 1, &nullSRV);
-	mDevice->OMSetRenderTargets(1, &mTargetView, NULL);
-	mDevice->ClearRenderTargetView(mTargetView, D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
+	mDevice->OMSetRenderTargets(1, &backBuffer, NULL);
+	mDevice->ClearRenderTargetView(backBuffer, D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
 
 	mLightEffect.SetVariable("gAmbientLightIntensity", mAmbientLight);
 	mLightEffect.SetVariable("gEyePosition", camera.GetPosition());
@@ -207,6 +209,17 @@ void DeferredRenderer::ApplyLightingPhase(const Camera::Camera& camera)
 		mDevice->Draw(mFullscreenQuad.GetElementCount(), 0);
 	}
 
+	mD3DContext->ResetRenderTarget();
+}
+
+void DeferredRenderer::BeginForwardState()
+{
+	ID3D10RenderTargetView* backBuffer = mD3DContext->GetBackBufferView();
+	mDevice->OMSetRenderTargets(1, &backBuffer, mDepthStencilView);
+}
+
+void DeferredRenderer::EndForwardState()
+{
 	mD3DContext->ResetRenderTarget();
 }
 
@@ -262,7 +275,7 @@ ID3D10ShaderResourceView* DeferredRenderer::GetDepthStencilBuffer() const
 
 ID3D10ShaderResourceView* DeferredRenderer::GetGBufferByIndex(unsigned int index) const
 {
-	r2AssertM(index <= C_GBUFFER_DEPTH, "Invalid G buffer index");
+	r2AssertM(index <= C_GBUFFER_COUNT, "Invalid G buffer index");
 	return mShaderResourceViews[index];
 }
 

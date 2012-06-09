@@ -9,11 +9,12 @@
 
 namespace Resources
 {
-	ModelObj::ModelObj(ID3D10Device* device, const std::string& objectFilename, const std::string& glowmapFilename)
+	ModelObj::ModelObj(ID3D10Device* device, const std::string& objectFilename, const std::string& glowmapFilename, float alpha)
 		: mDevice(device)
-		, mEffect(device, "Resources/Effects/ModelObj.fx")
+		, mDeferredEffect(mDevice, "Resources/Effects/ModelObjDeferred.fx")
+		, mForwardEffect(mDevice, "Resources/Effects/ModelObjForward.fx")
 		, mData(device, objectFilename)
-		, mScale(1.0f)
+		, mAlpha(alpha)
 		, mTintColor(D3DXCOLOR(1.0, 1.0, 1.0, 1.0))
 		, mGlowMap(NULL)
 	{
@@ -22,8 +23,9 @@ namespace Resources
 		inputLayout.push_back(Framework::Effect::InputLayoutElement("NORMAL", DXGI_FORMAT_R32G32B32_FLOAT));
 		inputLayout.push_back(Framework::Effect::InputLayoutElement("TEXCOORD", DXGI_FORMAT_R32G32_FLOAT));
 
-		mEffect.GetTechniqueByIndex(0).GetPassByIndex(0).SetInputLayout(inputLayout);
-
+		mDeferredEffect.GetTechniqueByIndex(0).GetPassByIndex(0).SetInputLayout(inputLayout);
+		mForwardEffect.GetTechniqueByIndex(0).GetPassByIndex(0).SetInputLayout(inputLayout);
+		
 		if (glowmapFilename.size() > 0)
 		{
 			mGlowMap = new Texture(mDevice, glowmapFilename);
@@ -44,64 +46,46 @@ namespace Resources
 		mData.VertexData.Bind(slot);
 	}
 
-	void ModelObj::Draw(const D3DXVECTOR3& drawPosition, const Camera::Camera& camera)
+	void ModelObj::DrawDeferred(const D3DXMATRIX& modelMatrix, const Camera::Camera& camera)
 	{
-		// Calculate the world matrix. Use worldViewProjection as temporary storage. Think green.
-		D3DXMATRIX world;
-		D3DXMATRIX worldViewProjection;
-		D3DXMatrixScaling(&world, mScale, mScale, mScale);		
-		D3DXMatrixTranslation(&worldViewProjection, drawPosition.x, drawPosition.y, drawPosition.z);
-		world *= worldViewProjection;
+		// Calculate the WVP
+		D3DXMATRIX worldViewProjection = modelMatrix * camera.GetViewProjection();
 
-		// Calculate the REAL worldViewProjection.
-		worldViewProjection = world * camera.GetViewProjection();
-
-		mEffect.SetVariable("gWorld", world);
-		mEffect.SetVariable("gMVP", worldViewProjection);
-		mEffect.SetVariable("gTexture", mData.MaterialData->GetMaterial(mData.MaterialName)->MainTexture->GetShaderResourceView());
-		mEffect.SetVariable("gGlowMap", mGlowMap->GetShaderResourceView());
-		mEffect.SetVariable("Ka", mData.MaterialData->GetMaterial(mData.MaterialName)->Ambient.x);
-		mEffect.SetVariable("Kd", mData.MaterialData->GetMaterial(mData.MaterialName)->Diffuse.x);
-		mEffect.SetVariable("Ks", mData.MaterialData->GetMaterial(mData.MaterialName)->Specular.x);
-		mEffect.SetVariable("A", mData.MaterialData->GetMaterial(mData.MaterialName)->SpecularExp);
-
+		mDeferredEffect.SetVariable("gWorld", modelMatrix);
+		mDeferredEffect.SetVariable("gMVP", worldViewProjection);
+		mDeferredEffect.SetVariable("gTexture", mData.MaterialData->GetMaterial(mData.MaterialName)->MainTexture->GetShaderResourceView());
+		mDeferredEffect.SetVariable("gGlowMap", mGlowMap->GetShaderResourceView());
+		mDeferredEffect.SetVariable("Ka", mData.MaterialData->GetMaterial(mData.MaterialName)->Ambient.x);
+		mDeferredEffect.SetVariable("Kd", mData.MaterialData->GetMaterial(mData.MaterialName)->Diffuse.x);
+		mDeferredEffect.SetVariable("Ks", mData.MaterialData->GetMaterial(mData.MaterialName)->Specular.x);
+		mDeferredEffect.SetVariable("A", mData.MaterialData->GetMaterial(mData.MaterialName)->SpecularExp);
+		
 		// Draw the buffer, once for each pass
-		for(UINT p = 0; p < mEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)
+		for(UINT p = 0; p < mDeferredEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)
 		{
-			mEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mDevice);
+			mDeferredEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mDevice);
 			mDevice->Draw(mData.VertexData.GetElementCount(), 0);
 		}
 	}
 
-	void ModelObj::Draw(const D3DXMATRIX& modelMatrix, const Camera::Camera& camera)
+	void ModelObj::DrawForwarded(const D3DXMATRIX& modelMatrix, const Camera::Camera& camera)
 	{
-		D3DXMATRIX worldViewProjection;
+		// Calculate the WVP
+		D3DXMATRIX worldViewProjection = modelMatrix * camera.GetViewProjection();
 
-		// Calculate the REAL worldViewProjection.
-		worldViewProjection = modelMatrix * camera.GetViewProjection();
-
-		mEffect.SetVariable("gWorld", modelMatrix);
-		mEffect.SetVariable("gMVP", worldViewProjection);
-		mEffect.SetVariable("gTexture", mData.MaterialData->GetMaterial(mData.MaterialName)->MainTexture->GetShaderResourceView());
-		mEffect.SetVariable("Ka", mData.MaterialData->GetMaterial(mData.MaterialName)->Ambient.x);
-		mEffect.SetVariable("Kd", mData.MaterialData->GetMaterial(mData.MaterialName)->Diffuse.x);
-		mEffect.SetVariable("Ks", mData.MaterialData->GetMaterial(mData.MaterialName)->Specular.x);
-		mEffect.SetVariable("A", mData.MaterialData->GetMaterial(mData.MaterialName)->SpecularExp);
+		mForwardEffect.SetVariable("gMVP", worldViewProjection);
+		mForwardEffect.SetVariable("gTexture", mData.MaterialData->GetMaterial(mData.MaterialName)->MainTexture->GetShaderResourceView());
+		mForwardEffect.SetVariable("gAlpha", mAlpha);
 
 		// Draw the buffer, once for each pass
-		for(UINT p = 0; p < mEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)
+		for(UINT p = 0; p < mForwardEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)
 		{
-			mEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mDevice);
+			mForwardEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mDevice);
 			mDevice->Draw(mData.VertexData.GetElementCount(), 0);
 		}
 	}
 
-	void ModelObj::SetScale(float newScale)
-	{
-		mScale = newScale;
-	}
-
-	void ModelObj::SetTintColor(D3DXCOLOR newColor)
+	void ModelObj::SetTintColor(const D3DXCOLOR& newColor)
 	{
 		mTintColor = newColor;
 	}

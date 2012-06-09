@@ -190,7 +190,8 @@
     <None Include="Resources\Effects\GBuffer.fx" />
     <None Include="Resources\Effects\Light.fx" />
     <None Include="Resources\Effects\Ground.fx" />
-    <None Include="Resources\Effects\ModelObj.fx" />
+    <None Include="Resources\Effects\ModelObjDeferred.fx" />
+    <None Include="Resources\Effects\ModelObjForward.fx" />
     <None Include="Resources\Effects\Morph.fx" />
     <None Include="Resources\Effects\Quad2D.fx" />
   </ItemGroup>

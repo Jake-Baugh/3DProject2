@@ -169,6 +169,16 @@ namespace Framework
 		mDevice->OMSetRenderTargets(1, &mBackBufferView, mDepthStencilView);
 	}
 
+	ID3D10RenderTargetView* D3DContext::GetBackBufferView()
+	{
+		return mBackBufferView;
+	}
+
+	ID3D10DepthStencilView* D3DContext::GetDepthStencilView()
+	{
+		return mDepthStencilView;
+	}
+
 	bool D3DContext::CreateDeviceAndSwapChain(Description description)
 	{
 		unsigned int deviceFlags = 0;

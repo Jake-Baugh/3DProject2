@@ -119,7 +119,6 @@
     <None Include=".gitignore" />
     <None Include="push.sh" />
     <None Include="pull.sh" />
-    <None Include="Resources\Effects\ModelObj.fx" />
     <None Include="Resources\Effects\Ground.fx" />
     <None Include="Resources\Effects\Curve.fx" />
     <None Include="Resources\Effects\Quad2D.fx" />
@@ -128,6 +127,8 @@
     <None Include="Resources\Effects\Debug.fx" />
     <None Include="Code\Camera\SplineCameraController.hpp" />
     <None Include="Resources\Effects\Morph.fx" />
+    <None Include="Resources\Effects\ModelObjDeferred.fx" />
+    <None Include="Resources\Effects\ModelObjForward.fx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Code\Framework\Effect\Effect.hpp">

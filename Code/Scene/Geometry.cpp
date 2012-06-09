@@ -27,10 +27,16 @@ namespace Scene
 		return mWorld;
 	}
 
-	void Geometry::Draw(const Camera::Camera& camera)
+	void Geometry::DrawDeferred(const Camera::Camera& camera)
 	{
 		mModel->Bind();
-		mModel->Draw(mWorld, camera);
+		mModel->DrawDeferred(mWorld, camera);
+	}
+
+	void Geometry::DrawForwarded(const Camera::Camera& camera)
+	{
+		mModel->Bind();
+		mModel->DrawForwarded(mWorld, camera);
 	}
 
 	void Geometry::DrawAABB(const Camera::Camera& camera)

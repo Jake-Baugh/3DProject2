@@ -82,6 +82,9 @@ namespace Framework
 
 		// Reset the render target to the back buffer and the main depth/stencil buffer.
 		void ResetRenderTarget();
+
+		ID3D10RenderTargetView* GetBackBufferView();
+		ID3D10DepthStencilView* GetDepthStencilView();
 	private:
 		ApplicationWindow* mTargetWindow;
 

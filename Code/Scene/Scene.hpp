@@ -14,7 +14,8 @@ namespace Scene
 		Scene(ID3D10Device* device);
 		~Scene() throw();
 
-		void Draw(const Camera::Camera& camera, const Helper::Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection);
+		void DrawDeferred(const Camera::Camera& camera, const Helper::Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection);
+		void DrawForwarded(const Camera::Camera& camera);
 	private:
 		static const Helper::AABB2f C_SCENE_QUAD;
 

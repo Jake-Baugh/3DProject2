@@ -53,6 +53,11 @@ RasterizerState StandardRasterState
 	CullMode = None;
 };
 
+BlendState NoBlending
+{
+	BlendEnable[0] = FALSE;
+};
+
 SamplerState LinearSampler
 {
 	Filter = MIN_MAG_MIP_LINEAR;
@@ -193,5 +198,6 @@ technique10 StandardTechnique
 		SetPixelShader(CompileShader(ps_4_0, PS()));
 
 		SetRasterizerState(StandardRasterState);
+		SetBlendState(NoBlending, float4(0.0f, 0.0f, 0.0f, 0.0f), 0xffffffff);
 	}
 }

@@ -11,14 +11,15 @@ namespace Scene
 		, mGround(mDevice, C_SCENE_QUAD.GetWidth() * 0.5f)
 	{
 		// Hard code some geometry
-		mModels.push_back(new Resources::ModelObj(mDevice, "crossReal.obj", "glow.png"));
-		mModels.push_back(new Resources::ModelObj(mDevice, "quadReal.obj", "glow.png"));
-		mModels.push_back(new Resources::ModelObj(mDevice, "ringReal.obj", "glow.png"));
-		mModels.push_back(new Resources::ModelObj(mDevice, "triangleReal.obj", "glow.png"));
-
+		mModels.push_back(new Resources::ModelObj(mDevice, "crossReal.obj", "", 1.0f));
+		mModels.push_back(new Resources::ModelObj(mDevice, "quadReal.obj", "", 1.0f));
+		mModels.push_back(new Resources::ModelObj(mDevice, "ringReal.obj", "", 1.0f));
+		mModels.push_back(new Resources::ModelObj(mDevice, "triangleReal.obj", "", 1.0f));
+		mModels.push_back(new Resources::ModelObj(mDevice, "wallSegment.obj", "", 0.5f));
 
 		const float RADIUS = 50.0f;
 		const int N = 15;
+		const int MAX_MODEL = 4;
 		const double DT = 2 * D3DX_PI / N;
 		
 		for (int i = 0; i < N; ++i)
@@ -26,7 +27,7 @@ namespace Scene
 			D3DXMATRIX world;
 			D3DXMatrixTranslation(&world, RADIUS * cos(i * DT), 2.0f, RADIUS * sin(i * DT));
 
-			mGeometry.push_back(new Geometry(mDevice, mModels[i % mModels.size()], world));
+			mGeometry.push_back(new Geometry(mDevice, mModels[i % MAX_MODEL], world));
 			mQuadTree.AddGeometry(mGeometry[i]);
 		}
 	}
@@ -39,7 +40,7 @@ namespace Scene
 			SafeDelete(mModels[i]);
 	}
 
-	void Scene::Draw(const Camera::Camera& camera, const Helper::Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection)
+	void Scene::DrawDeferred(const Camera::Camera& camera, const Helper::Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection)
 	{
 		/*
 		mGround.Draw(camera);
@@ -57,7 +58,17 @@ namespace Scene
 		mGround.Draw(camera);
 		for (std::set<Geometry*>::iterator it = visibleGeometry.begin(); it != visibleGeometry.end(); ++it)
 		{
-			(*it)->Draw(camera);
+			(*it)->DrawDeferred(camera);
 		}
+
+		
+	}
+
+	void Scene::DrawForwarded(const Camera::Camera& camera)
+	{
+		D3DXMATRIX identity;
+		D3DXMatrixIdentity(&identity);
+		mModels.back()->Bind();
+		mModels.back()->DrawForwarded(identity, camera);
 	}
 }

@@ -30,6 +30,7 @@ public:
 	static const int C_GBUFFER_NORMAL;
 	static const int C_GBUFFER_MATERIAL;
 	static const int C_GBUFFER_DEPTH;
+	static const int C_GBUFFER_COUNT;
 	
 
 	DeferredRenderer(Framework::D3DContext* d3dContext, int width, int height);
@@ -42,6 +43,8 @@ public:
 	void BeginDeferredState();
 	void EndDeferredState();
 	void ApplyLightingPhase(const Camera::Camera& camera);
+	void BeginForwardState();
+	void EndForwardState();
 
 	void RenderFinalComposition();
 	void RenderBuffer(ID3D10ShaderResourceView* buffer);

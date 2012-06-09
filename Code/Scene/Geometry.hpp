@@ -19,7 +19,8 @@ namespace Scene
 		void SetWorld(const D3DXMATRIX& world);
 		const D3DXMATRIX& GetWorld() const;
 
-		void Draw(const Camera::Camera& camera);
+		void DrawDeferred(const Camera::Camera& camera);
+		void DrawForwarded(const Camera::Camera& camera);
 		void DrawAABB(const Camera::Camera& camera);
 	private:
 		Helper::AABB3f CreateAABB() const;

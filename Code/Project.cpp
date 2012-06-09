@@ -143,11 +143,11 @@ void Project::Draw(float dt)
 
 	if (mUseDebugFrustum)
 	{
-		mScene.Draw(mCamera, mProjectionDescription.Frustum, mDebugFrustumPosition, mDebugFrustumDirection);
+		mScene.DrawDeferred(mCamera, mProjectionDescription.Frustum, mDebugFrustumPosition, mDebugFrustumDirection);
 	}
 	else
 	{
-		mScene.Draw(mCamera, mProjectionDescription.Frustum, mCamera.GetPosition(), mCamera.GetDirection());
+		mScene.DrawDeferred(mCamera, mProjectionDescription.Frustum, mCamera.GetPosition(), mCamera.GetDirection());
 	}
 
 	D3DXMATRIX world;
@@ -166,6 +166,10 @@ void Project::Draw(float dt)
 
 	mDeferredRenderer.EndDeferredState();
 	mDeferredRenderer.ApplyLightingPhase(mCamera);
+
+	mDeferredRenderer.BeginForwardState();
+	mScene.DrawForwarded(mCamera);
+	mDeferredRenderer.EndForwardState();
 
 	if (mBufferToRender == -1)
 		mDeferredRenderer.RenderFinalComposition();
