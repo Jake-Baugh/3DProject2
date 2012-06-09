@@ -169,6 +169,10 @@ void Project::Draw(float dt)
 
 	mDeferredRenderer.BeginForwardState();
 	mScene.DrawForwarded(mCamera);
+
+	/*if (mUseDebugFrustum)
+		mDrawableFrustum.DrawForward;*/
+
 	mDeferredRenderer.EndForwardState();
 
 	if (mBufferToRender >= 0)

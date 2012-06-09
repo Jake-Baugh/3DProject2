@@ -27,6 +27,7 @@ cbuffer cbEveryFrame
 };
 
 Texture2D gTexture;
+float4 gTintColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
 float gAlpha;
 
 
@@ -77,18 +78,7 @@ PS_INPUT VS(VS_INPUT input)
 
 float4 PS(PS_INPUT input) : SV_TARGET0
 {
-	/*
-	float2 GBufferUV = (input.PositionH.xy + 1.0f) * 0.5f;
-	if (gDepthBuffer.Sample(LinearSampler, GBufferUV).r > input.PositionH.z)
-	{
-		return float4(0.0f, 0.0f, 0.0f, 0.0f);
-	}
-	else
-	{
-		return gTexture.Sample(LinearSampler, input.TexCoord) * gAlpha;
-	}
-	*/
-	return float4(gTexture.Sample(LinearSampler, input.TexCoord).xyz, gAlpha);
+	return float4(gTexture.Sample(LinearSampler, input.TexCoord).xyz, gAlpha) * gTintColor;
 }
 
 

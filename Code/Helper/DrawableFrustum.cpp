@@ -5,39 +5,13 @@ namespace Helper
 	DrawableFrustum::DrawableFrustum(ID3D10Device* device, const Helper::Frustum& frustum, const D3DXVECTOR3& origin, const D3DXVECTOR3& direction)
 		: mDevice(device)
 		, mFrustum(frustum)
-		, mFrustumNormals(6)
 		, mFrustumPositions(6)
 		, mOrigin(origin)
 		, mDirection(direction)
-		, mNormalBuffer(mDevice)
+		, mFrustumWallBuffer(mDevice)
 		, mFrustumBuffer(mDevice)
 		, mEffect(mDevice, "Resources/Effects/Debug.fx")
 	{
-		Framework::Effect::InputLayoutVector inputLayout;
-		inputLayout.push_back(Framework::Effect::InputLayoutElement("POSITION", DXGI_FORMAT_R32G32B32_FLOAT));
-		mEffect.GetTechniqueByIndex(0).GetPassByIndex(0).SetInputLayout(inputLayout);
-
-
-		
-		D3DXVECTOR3 normalVertices[] = { D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f)
-									   , D3DXVECTOR3(-0.1f, 0.0f, 0.75f), D3DXVECTOR3(0.0f, 0.0f, 1.0f)
-									   , D3DXVECTOR3(0.1f, 0.0f, 0.75f), D3DXVECTOR3(0.0f, 0.0f, 1.0f) };
-		/*
-		D3DXVECTOR3 normalVertices[] = { D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 0.0f, 0.0f)
-									   , D3DXVECTOR3(0.75f, 0.0f, -0.1f), D3DXVECTOR3(1.0f, 0.0f, 0.0f)
-									   , D3DXVECTOR3(0.75f, 0.0f, 0.1f), D3DXVECTOR3(1.0f, 0.0f, 0.0f) };
-		*/
-
-		Framework::VertexBuffer::Description normalBufferDescription;
-		normalBufferDescription.ElementCount = 6;
-		normalBufferDescription.ElementSize = sizeof(D3DXVECTOR3);
-		normalBufferDescription.FirstElementPointer = normalVertices;
-		normalBufferDescription.Topology = Framework::Topology::LineList;
-		normalBufferDescription.Usage = Framework::Usage::Default;
-
-		mNormalBuffer.SetData(normalBufferDescription, NULL);
-
-
 		SetFrustum(frustum);
 		UpdateWorld();
 	}
@@ -98,48 +72,32 @@ namespace Helper
 
 		mFrustumBuffer.SetData(bufferDescription, NULL);
 
+		//// Set up wall buffer
+		//std::vector<WallVertex> wallVertices;
+		//WallVertex currVertex;
 
-		/*
-		mFrustumNormals[0] = D3DXVECTOR3(0.0, 0.0, -1.0);
-		mFrustumNormals[1] = D3DXVECTOR3(0.0, 0.0, 1.0);
-		mFrustumNormals[2] = D3DXVECTOR3(-1.0, 0.0, 0.0);
-		mFrustumNormals[3] = D3DXVECTOR3(1.0, 0.0, 0.0);
-		mFrustumNormals[4] = D3DXVECTOR3(0.0, 1.0, 0.0);
-		mFrustumNormals[5] = D3DXVECTOR3(0.0, -1.0, 0.0);
-		*/
+		//currVertex.Position = nearVertices[0];
+		//currVertex.Normal = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+		//currVertex.TexCoord = D3DXVECTOR2(1.0f, 1.0f);
+		//wallVertices.push_back(currVertex);
 
-		
-		// Front & Back
-		D3DXVec3Cross(&mFrustumNormals[0], &(nearVertices[2] - nearVertices[0]),
-					  &(nearVertices[1] - nearVertices[0]));
-		mFrustumPositions[0] = D3DXVECTOR3(0.0f, 0.0f, nearOrigin.z - 0.1f);
+		//currVertex.Position = nearVertices[2];
+		//currVertex.TexCoord = D3DXVECTOR2(1.0f, 1.0f);
+		//wallVertices.push_back(currVertex);
 
-		mFrustumNormals[1] = -mFrustumNormals[0];
-		mFrustumPositions[1] = D3DXVECTOR3(0.0f, 0.0f, nearOrigin.z + 0.1f);
+		//currVertex.Position = nearVertices[1];
+		//currVertex.TexCoord = D3DXVECTOR2(1.0f, 1.0f);
+		//wallVertices.push_back(currVertex);
+		//
 
+		//Framework::VertexBuffer::Description wallBufferDescription;
+		//wallBufferDescription.ElementCount = sizeof(wallVertices) / sizeof(wallVertices[0]);
+		//wallBufferDescription.ElementSize = sizeof(WallVertex);
+		//wallBufferDescription.FirstElementPointer = vertices;
+		//wallBufferDescription.Topology = Framework::Topology::TriangleList;
+		//wallBufferDescription.Usage = Framework::Usage::Default;
 
-		// Left & Right
-		D3DXVec3Cross(&mFrustumNormals[2], &(farVertices[2] - farVertices[0]),
-					  &(nearVertices[0] - farVertices[0]));
-		mFrustumPositions[2] = D3DXVECTOR3(-halfWidthNear, 0.0f, nearOrigin.z);
-
-		D3DXVec3Cross(&mFrustumNormals[3], &(nearVertices[3] - nearVertices[1]),
-					  &(farVertices[1] - nearVertices[1]));
-		mFrustumPositions[3] = D3DXVECTOR3(halfWidthNear, 0.0f, nearOrigin.z);
-
-		// Top & Bottom
-		D3DXVec3Cross(&mFrustumNormals[4], &(nearVertices[3] - nearVertices[2]), 
-					  &(farVertices[2] - nearVertices[2]));
-		mFrustumPositions[4] = D3DXVECTOR3(0.0f, halfHeightNear, nearOrigin.z);
-
-		D3DXVec3Cross(&mFrustumNormals[5], &(farVertices[1] - farVertices[0]),
-					  &(nearVertices[0] - farVertices[0]));
-		mFrustumPositions[5] = D3DXVECTOR3(0.0f, -halfHeightNear, nearOrigin.z);
-
-		for (unsigned int i = 0; i < mFrustumNormals.size(); ++i)
-		{
-			D3DXVec3Normalize(&mFrustumNormals[i], &mFrustumNormals[i]);
-		}
+		//mFrustumWallBuffer.SetData(wallBufferDescription, NULL);
 	}
 
 
@@ -153,20 +111,6 @@ namespace Helper
 		{
 			mEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mDevice);
 			mDevice->Draw(mFrustumBuffer.GetElementCount(), 0);
-		}
-
-		mNormalBuffer.Bind();
-		for (unsigned int i = 0; i < mFrustumNormals.size(); ++i)
-		{
-			D3DXMATRIX world = GetNormalMatrix(mFrustumPositions[i], mFrustumNormals[i]);
-			mEffect.SetVariable("gWorld", world * mWorld);
-			mEffect.SetVariable("gMVP", world * mWorld * camera.GetViewProjection());
-
-			for (unsigned int p = 0; p < mEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)
-			{
-				mEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mDevice);
-				mDevice->Draw(mNormalBuffer.GetElementCount(), 0);
-			}
 		}
 	}
 
