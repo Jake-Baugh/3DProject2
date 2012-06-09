@@ -83,6 +83,7 @@ namespace Resources
 		mEffect.SetVariable("gWorld", modelMatrix);
 		mEffect.SetVariable("gMVP", worldViewProjection);
 		mEffect.SetVariable("gTexture", mData.MaterialData->GetMaterial(mData.MaterialName)->MainTexture->GetShaderResourceView());
+		mEffect.SetVariable("gGlowMap", mGlowMap->GetShaderResourceView());
 		mEffect.SetVariable("Ka", mData.MaterialData->GetMaterial(mData.MaterialName)->Ambient.x);
 		mEffect.SetVariable("Kd", mData.MaterialData->GetMaterial(mData.MaterialName)->Diffuse.x);
 		mEffect.SetVariable("Ks", mData.MaterialData->GetMaterial(mData.MaterialName)->Specular.x);

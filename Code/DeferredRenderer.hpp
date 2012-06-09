@@ -9,6 +9,7 @@
 #include <Helper\Global.hpp>
 #include <Camera\Camera.hpp>
 #include <Resources\Texture.hpp>
+#include <SSAO.hpp>
 
 struct DirectionalLight
 {
@@ -30,6 +31,7 @@ public:
 	static const int C_GBUFFER_POSITION;
 	static const int C_GBUFFER_NORMAL;
 	static const int C_GBUFFER_MATERIAL;
+	static const int C_GBUFFER_SSAO;
 	static const int C_GBUFFER_DEPTH;
 	
 
@@ -44,7 +46,7 @@ public:
 	bool GetSSAOToggle() const;
 
 	void BeginDeferredState();
-	void EndDeferredState();
+	void EndDeferredState(const Camera::Camera& camera, const Helper::Frustum& frustum);
 	void ApplyLightingPhase(const Camera::Camera& camera);
 
 	void RenderFinalComposition();
@@ -80,6 +82,7 @@ private:
 	ID3D10Texture2D* mPositionBuffer;
 	ID3D10Texture2D* mNormalBuffer;
 	ID3D10Texture2D* mMaterialBuffer;
+	ID3D10Texture2D* mSSAOBuffer;
 	ID3D10Texture2D* mDepthStencilBuffer;
 
 	// Render/Depth views for rendering to the buffers
@@ -88,6 +91,7 @@ private:
 	ID3D10RenderTargetView* mPositionView;
 	ID3D10RenderTargetView* mNormalView;
 	ID3D10RenderTargetView* mMaterialView;
+	ID3D10RenderTargetView* mSSAOView;
 	ID3D10DepthStencilView* mDepthStencilView;
 
 	// Shader resource views for reading from the buffers
@@ -96,6 +100,7 @@ private:
 	ID3D10ShaderResourceView* mPositionSRV;
 	ID3D10ShaderResourceView* mNormalSRV;
 	ID3D10ShaderResourceView* mMaterialSRV;
+	ID3D10ShaderResourceView* mSSAOSRV;
 	ID3D10ShaderResourceView* mDepthStencilSRV;
 
 	// Contains the G buffers: color, normal and depth.
@@ -108,8 +113,8 @@ private:
 	std::vector<ID3D10ShaderResourceView*> mShaderResourceViews;
 
 
-	// A texture with noise, used for SSAO
-	Resources::Texture mRandomBuffer;
+	// For applying the SSAO effect
+	SSAO mSSAO;
 
 	// Whether SSAO should be on or off
 	bool mSSAOToggle;

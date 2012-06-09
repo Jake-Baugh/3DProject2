@@ -114,6 +114,9 @@
     <ClCompile Include="Code\Scene\Ground.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Code\SSAO.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
@@ -128,6 +131,7 @@
     <None Include="Resources\Effects\Debug.fx" />
     <None Include="Code\Camera\SplineCameraController.hpp" />
     <None Include="Resources\Effects\Morph.fx" />
+    <None Include="Resources\Effects\SSAO.fx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Code\Framework\Effect\Effect.hpp">
@@ -230,6 +234,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Code\Scene\Ground.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Code\SSAO.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

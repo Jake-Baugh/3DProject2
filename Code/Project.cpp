@@ -1,3 +1,5 @@
+#include <cmath>
+#include <ctime>
 #include <Project.hpp>
 #include <Camera\CircleCameraController.hpp>
 #include <Camera\FreeCameraController.hpp>
@@ -41,6 +43,8 @@ Project::Project(HINSTANCE instance)
 	, mAnimation(NULL)
 	, mCameraCurve(mD3DContext.GetDevice(), &mCameraSpline) // DEBUG
 {
+	srand(time(NULL));
+
 	DirectionalLight dl;
 	dl.Direction = D3DXVECTOR4(0.0, -1.0, 0.0, 0.0f);
 	dl.Intensity = D3DXVECTOR4(0.5f, 0.0f, 0.5f, 0.0f);
@@ -113,6 +117,10 @@ void Project::KeyPressed(Framework::ApplicationWindow* window, int keyCode)
 		break;
 
 		case VK_F6:
+			mBufferToRender = DeferredRenderer::C_GBUFFER_SSAO;
+		break;
+
+		case VK_F7:
 			mBufferToRender = DeferredRenderer::C_GBUFFER_DEPTH;
 		break;
 
@@ -169,7 +177,7 @@ void Project::Draw(float dt)
 		mDrawableFrustum.Draw(mCamera);
 	}
 
-	mDeferredRenderer.EndDeferredState();
+	mDeferredRenderer.EndDeferredState(mCamera, mProjectionDescription.Frustum);
 	mDeferredRenderer.ApplyLightingPhase(mCamera);
 
 	if (mBufferToRender == -1)

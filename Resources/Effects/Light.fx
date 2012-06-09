@@ -52,12 +52,12 @@ float3 gEyePositionW;
 
 bool gSSAOToggle = true;
 int gAOSampleCount = 8;
-/*
+
 float gAORadius = 10.0f;
-float gAOScale = 1.0f;
-float gAOBias = 0.0f;
-float gAOIntensity = 6.0f;
-*/
+float gAOScale = 5.0f;
+float gAOBias = 0.0001f;
+float gAOIntensity = 10.0f;
+
 
 
 /** Render states */
@@ -131,11 +131,13 @@ float Fb(float dotp, float shininess)
 	}
 }
 
-/*
+
+
 float2 GetRandom(float uv)
 {
 	float2 random = gRandomBuffer.Sample(LinearSampler, uv).xy;
-	random = random * 2.0f - 1.0f;
+	//random = random * 2.0f - 1.0f;
+	random = (random + 1.0f) * 0.5f;
 
 	return random;
 }
@@ -153,7 +155,8 @@ float CalculateSSAO(float3 positionW, float3 normalW, float2 uv)
 {
 	//float2 random = normalize(saturate(gRandomBuffer.Sample(LinearSampler, uv).xy));
 	float depth = gDepthBuffer.Sample(LinearSampler, uv).x;
-	float2 random = GetRandom(uv);
+	//float2 random = GetRandom(uv);
+	float2 random = GetRandom(normalize(normalW.xy));
 
 	int N = 4;
 	const float2 C_NEIGHBOURS[4] = { float2(1.0f, 0.0f), float2(-1.0f, 0.0f)
@@ -178,11 +181,15 @@ float CalculateSSAO(float3 positionW, float3 normalW, float2 uv)
 
 	return ao;
 }
-*/
 
+
+
+/*
 float3 RandomOffset(float2 uv)
 {
-	return gRandomBuffer.Sample(LinearSampler, uv).xyz;
+	float3 rand = normalize(gRandomBuffer.Sample(LinearSampler, uv).xyz);
+	
+	return rand;
 }
 
 float OcclusionFunction(float distSquared)
@@ -192,6 +199,7 @@ float OcclusionFunction(float distSquared)
 	return 1.0f / (1.0f + distSquared);
 	//return exp(-distSquared);
 }
+
 
 float CalculateSSAO(float3 positionW, float3 normalW, float2 uv)
 {
@@ -220,6 +228,7 @@ float CalculateSSAO(float3 positionW, float3 normalW, float2 uv)
 		float4 projectionOffset = mul(float4(offset, 1.0f), gProjection);
 		offset = projectionOffset.xyz / projectionOffset.w;
 		//offset.xy = (offset.xy * 0.5) + 0.5f;
+		
 
 		if (offset.z > positionH.z)
 		//if (gDepthBuffer.Sample(LinearSampler, projectionOffset.xy).r > gDepthBuffer.Sample(LinearSampler, uv).r)
@@ -235,6 +244,65 @@ float CalculateSSAO(float3 positionW, float3 normalW, float2 uv)
 	return ao;
 	//return RandomOffset(uv).x;
 }
+*/
+
+/*
+float2 RandomOffset(float2 uv)
+{
+	//uv.x = uv.x * 256.0f / 1024.0f;
+	//uv.y = uv.y * 256.0f / 768.0f;
+
+	float radius = 0.01f;
+	float2 uvOffset = normalize(gRandomBuffer.Sample(LinearSampler, uv).xy);
+	uvOffset.x = uvOffset.x * radius / 1024.0f;
+	uvOffset.y = uvOffset.y * radius / 768.0f;
+
+	return uvOffset;
+}
+*/
+
+/*
+float3 RandomOffset(float2 uv)
+{
+	float3 rand = normalize(gRandomBuffer.Sample(LinearSampler, uv).xyz);
+	
+	return rand;
+}
+
+float CalculateSSAO(float3 positionW, float2 uv)
+{
+	float4 positionH = mul(float4(positionW, 1.0f), mul(gView, gProjection));
+	positionH /= positionH.w;
+
+	float sourceDepth = gDepthBuffer.Sample(LinearSampler, uv).r;
+	float occlusion = 0.0f;
+	for (int i = 0; i < gAOSampleCount; ++i)
+	{
+		float3 sampleW = positionW + RandomOffset(uv + float2(0.1, 0.1) * i);
+		float4 sampleOffset = mul(float4(sampleW, 1.0f), mul(gView, gProjection));
+		sampleOffset.xyz /= sampleOffset.w;
+		
+		float2 sampleUV = 2.0f * sampleOffset.xy - 1.0f;
+		float sampleDepth = gDepthBuffer.Sample(LinearSampler, sampleUV).r;
+
+		if (sampleDepth > 0.999)
+		{
+			occlusion++;
+		}
+		else
+		{
+			float depthDiff = sourceDepth - sampleDepth;
+			if (depthDiff > 0)
+			{
+				occlusion += 1.0f - (depthDiff);
+			}
+		}
+	}
+
+	occlusion = occlusion / gAOSampleCount;
+
+	return occlusion;
+}*/
 
 
 /** Shader implementation */
@@ -286,6 +354,7 @@ float4 PS(PS_INPUT input) : SV_TARGET0
 	color = (0.8f * albedo) + (0.2f * color);
 	color += glowColor;
 
+	/*
 	// calculate ssao
 	if (gSSAOToggle)
 	{
@@ -296,6 +365,7 @@ float4 PS(PS_INPUT input) : SV_TARGET0
 
 		return float4(ao, ao, ao, 1.0f);
 	}
+	*/
 	
 	return color;
 

@@ -11,11 +11,11 @@ namespace Scene
 		, mGround(mDevice, C_SCENE_QUAD.GetWidth() * 0.5f)
 	{
 		// Hard code some geometry
-		mModels.push_back(new Resources::ModelObj(mDevice, "crossReal.obj", "glow.png"));
-		mModels.push_back(new Resources::ModelObj(mDevice, "quadReal.obj", "glow.png"));
-		mModels.push_back(new Resources::ModelObj(mDevice, "ringReal.obj", "glow.png"));
-		mModels.push_back(new Resources::ModelObj(mDevice, "triangleReal.obj", "glow.png"));
-		mBTHLogo = new Resources::ModelObj(mDevice, "bth.obj", "glow.png");
+		mModels.push_back(new Resources::ModelObj(mDevice, "crossReal.obj", ""));
+		mModels.push_back(new Resources::ModelObj(mDevice, "quadReal.obj", ""));
+		mModels.push_back(new Resources::ModelObj(mDevice, "ringReal.obj", ""));
+		mModels.push_back(new Resources::ModelObj(mDevice, "triangleReal.obj", ""));
+		mBTHLogo = new Resources::ModelObj(mDevice, "bth.obj", "");
 
 		const float RADIUS = 120.0f;
 		const int N = 15;

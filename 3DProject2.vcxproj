@@ -179,6 +179,7 @@
     <ClCompile Include="Code\Resources\StaticModelData.cpp" />
     <ClCompile Include="Code\Resources\Texture.cpp" />
     <ClCompile Include="Code\Scene\Scene.cpp" />
+    <ClCompile Include="Code\SSAO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
@@ -193,6 +194,7 @@
     <None Include="Resources\Effects\ModelObj.fx" />
     <None Include="Resources\Effects\Morph.fx" />
     <None Include="Resources\Effects\Quad2D.fx" />
+    <None Include="Resources\Effects\SSAO.fx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Code\Camera\CameraController.hpp" />
@@ -229,6 +231,7 @@
     <ClInclude Include="Code\Resources\StaticModelData.hpp" />
     <ClInclude Include="Code\Resources\Texture.hpp" />
     <ClInclude Include="Code\Scene\Scene.hpp" />
+    <ClInclude Include="Code\SSAO.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
