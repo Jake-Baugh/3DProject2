@@ -15,10 +15,11 @@ namespace Scene
 		mModels.push_back(new Resources::ModelObj(mDevice, "quadReal.obj", "", 1.0f));
 		mModels.push_back(new Resources::ModelObj(mDevice, "ringReal.obj", "", 1.0f));
 		mModels.push_back(new Resources::ModelObj(mDevice, "triangleReal.obj", "", 1.0f));
+		mModels.push_back(new Resources::ModelObj(mDevice, "bth.obj", "", 1.0f));
 		mModels.push_back(new Resources::ModelObj(mDevice, "wallSegment.obj", "", 0.5f));
 
-		const float RADIUS = 100.0f;
-		const int N = 15;
+		const float RADIUS = 200.0f;
+		const int N = 3;
 		const int MAX_MODEL = 4;
 		const double DT = 2 * D3DX_PI / N;
 		
@@ -28,6 +29,14 @@ namespace Scene
 			D3DXMatrixTranslation(&world, RADIUS * cos(i * DT), 2.0f, RADIUS * sin(i * DT));
 
 			mGeometry.push_back(new Geometry(mDevice, mModels[i % MAX_MODEL], world));
+		}
+
+		D3DXMATRIX world;
+		D3DXMatrixRotationX(&world, D3DX_PI * 0.5f);
+		mGeometry.push_back(new Geometry(mDevice, mModels[4], world));
+
+		for (int i = 0; i < mGeometry.size(); ++i)
+		{
 			mQuadTree.AddGeometry(mGeometry[i]);
 		}
 	}
@@ -56,9 +65,22 @@ namespace Scene
 
 	void Scene::DrawForwarded(const Camera::Camera& camera)
 	{
-		D3DXMATRIX identity;
-		D3DXMatrixIdentity(&identity);
-		mModels.back()->Bind();
-		mModels.back()->DrawForwarded(identity, camera);
+		const float RADIUS = 100.0f;
+		const int N = 4;
+		const double DT = 2 * D3DX_PI / N;
+
+		const D3DXCOLOR COLORS[] = { D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f)
+								   , D3DXCOLOR(0.0f, 1.0f, 0.0f, 1.0f)
+								   , D3DXCOLOR(0.0f, 0.0f, 1.0f, 1.0f)
+								   , D3DXCOLOR(1.0f, 0.0f, 1.0f, 1.0f) };
+		for (int i = 0; i < N; ++i)
+		{
+			D3DXMATRIX world;
+			D3DXMatrixTranslation(&world, RADIUS * cos(i * DT), 0.0f, RADIUS * sin(i * DT));
+
+			mModels.back()->Bind();
+			mModels.back()->SetTintColor(COLORS[i]);
+			mModels.back()->DrawForwarded(world, camera);
+		}
 	}
 }

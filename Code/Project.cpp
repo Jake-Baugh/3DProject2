@@ -30,16 +30,19 @@ Project::Project(HINSTANCE instance)
 	, mDebugFrustumPosition(0.0f, 0.0f, 0.0f)
 	, mDebugFrustumDirection(0.0f, 0.0f, 0.0f)
 	, mProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight())
-	, mCameraSpline(D3DXVECTOR3(-20, 30, -20), D3DXVECTOR3(-20, 0, -20), D3DXVECTOR3(20, 60, 20), D3DXVECTOR3(20,30,20))
+	, mCameraSpline(D3DXVECTOR3(-128, 30, 0), D3DXVECTOR3(-20, 25, 20), D3DXVECTOR3(20, 45, 20), D3DXVECTOR3(20, 30, 0))
 	, mCamera(mProjectionDescription.Frustum.CreatePerspectiveProjection(), D3DXVECTOR3(0.0f, 30.0f, -20.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f))
-	//, mCameraController(new Camera::SplineCameraController(&mCamera, &mCameraSpline, Camera::SplineCameraController::Spline))
-	, mCameraController(new Camera::FreeCameraController(&mCamera))
+	, mSplineController(new Camera::SplineCameraController(&mCamera, &mCameraSpline, Camera::SplineCameraController::Spline))
+	, mFreeController(new Camera::FreeCameraController(&mCamera))
+	, mCurrentCamera(mSplineController)
 	, mDeferredRenderer(&mD3DContext, mWindow.GetClientWidth(), mWindow.GetClientHeight())
 	, mBufferToRender(-1)
 	, mScene(mD3DContext.GetDevice())
 	, mDrawableFrustum(mD3DContext.GetDevice(), ProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight()).Frustum, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f))
 	, mAnimation(NULL)
 	, mCameraCurve(mD3DContext.GetDevice(), &mCameraSpline) // DEBUG
+	, mAnimationRadius(75.0f)
+	, mAnimationAngle(0.0f)
 {
 	DirectionalLight dl;
 	dl.Direction = D3DXVECTOR4(0.0, -1.0, 0.0, 0.0f);
@@ -48,6 +51,8 @@ Project::Project(HINSTANCE instance)
 	mDeferredRenderer.SetDirectionalLight(dl);
 	mDeferredRenderer.SetAmbientLight(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 	
+	mCameraSpline.AddSegment(20, D3DXVECTOR3(-20, 27, -20), D3DXVECTOR3(-20, 33, 0));
+
 	const float RADIUS = 20;
 	D3DXVECTOR3 intensities[] = { D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR3(1.0f, 0.0f, 1.0f) };
 	int pointLightCount = sizeof(intensities) / sizeof(intensities[0]);
@@ -79,7 +84,8 @@ Project::Project(HINSTANCE instance)
 
 Project::~Project() throw()
 {
-	SafeDelete(mCameraController);
+	SafeDelete(mSplineController);
+	SafeDelete(mFreeController);
 	SafeDelete(mAnimation);
 }
 
@@ -125,14 +131,22 @@ void Project::KeyPressed(Framework::ApplicationWindow* window, int keyCode)
 				mDrawableFrustum.Update(mCamera.GetPosition(), mCamera.GetDirection());
 			}
 		break;
+		case 'C':
+			if (mCurrentCamera == mSplineController)
+				mCurrentCamera = mFreeController;
+			else
+				mCurrentCamera = mSplineController;
+		break;
 	}
 }
 
 void Project::Update(float dt)
 {
+	mAnimationAngle += dt * 0.2f;
+
 	mAnimation->Update(dt);
 
-	mCameraController->Update(dt, mWindow.GetCurrentInput(), mWindow.GetPreviousInput());
+	mCurrentCamera->Update(dt, mWindow.GetCurrentInput(), mWindow.GetPreviousInput());
 	mCamera.Commit();
 }
 
@@ -146,13 +160,41 @@ void Project::Draw(float dt)
 	else
 		mScene.DrawDeferred(mCamera, mProjectionDescription.Frustum, mCamera.GetPosition(), mCamera.GetDirection());
 
-	D3DXMATRIX world;
-	D3DXMatrixIdentity(&world);
+	/*
+	D3DXVECTOR3 animationPosition = D3DXVECTOR3(mAnimationRadius * cos(mAnimationAngle), 1.0f, mAnimationRadius * sin(mAnimationAngle));
+	//D3DXVECTOR2 animationTangent = D3DXVECTOR2(-mAnimationRadius * sin(mAnimationAngle), mAnimationRadius * cos(mAnimationAngle));
+	D3DXVECTOR2 animationTangent = D3DXVECTOR2(cos(mAnimationAngle + 0.01), sin(mAnimationAngle + 0.01));
 
-	mAnimation->Draw(mCamera, world);
-	mAnimation->DrawAABB(mCamera, world);
+	D3DXMATRIX translation, rotation;
 
-	//mCameraCurve.Draw(mCamera);
+	D3DXMatrixRotationY(&rotation, atan2(animationTangent.y, animationTangent.x));
+	D3DXMatrixTranslation(&translation, animationPosition.x, animationPosition.y, animationPosition.z);
+
+	mAnimation->Draw(mCamera, rotation * translation);
+	*/
+	//mAnimation->DrawAABB(mCamera, rotation * translation);
+
+	/*
+	D3DXMATRIX world, rotation, pRot;
+	
+	D3DXMatrixTranslation(&world, mAnimationRadius, 0, 0);
+	D3DXMatrixRotationY(&rotation, mAnimationAngle);
+	D3DXMatrixRotationY(&pRot, mAnimationAngle);
+
+	mAnimation->Draw(mCamera, pRot * world * rotation);
+	mAnimation->DrawAABB(mCamera, pRot * world * rotation);
+	*/
+
+	D3DXVECTOR3 animationPosition = D3DXVECTOR3(mAnimationRadius * cos(mAnimationAngle), 1.0f, mAnimationRadius * sin(mAnimationAngle));
+	
+	D3DXMATRIX translation, rotation;
+	D3DXMatrixTranslation(&translation, mAnimationRadius, 2.0, 0);
+	D3DXMatrixRotationY(&rotation, mAnimationAngle);
+
+	mAnimation->Draw(mCamera, translation * rotation);
+
+
+	mCameraCurve.Draw(mCamera);
 
 	if (mUseDebugFrustum)
 		mDrawableFrustum.Draw(mCamera);

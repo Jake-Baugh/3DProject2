@@ -53,6 +53,7 @@ namespace Resources
 
 		mDeferredEffect.SetVariable("gWorld", modelMatrix);
 		mDeferredEffect.SetVariable("gMVP", worldViewProjection);
+		mDeferredEffect.SetVariable("gTintColor", (D3DXVECTOR4)mTintColor);
 		mDeferredEffect.SetVariable("gTexture", mData.MaterialData->GetMaterial(mData.MaterialName)->MainTexture->GetShaderResourceView());
 		mDeferredEffect.SetVariable("gGlowMap", mGlowMap->GetShaderResourceView());
 		mDeferredEffect.SetVariable("Ka", mData.MaterialData->GetMaterial(mData.MaterialName)->Ambient.x);
@@ -76,6 +77,7 @@ namespace Resources
 		mForwardEffect.SetVariable("gMVP", worldViewProjection);
 		mForwardEffect.SetVariable("gTexture", mData.MaterialData->GetMaterial(mData.MaterialName)->MainTexture->GetShaderResourceView());
 		mForwardEffect.SetVariable("gAlpha", mAlpha);
+		mForwardEffect.SetVariable("gTintColor", (D3DXVECTOR4)mTintColor);
 
 		// Draw the buffer, once for each pass
 		for(UINT p = 0; p < mForwardEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)

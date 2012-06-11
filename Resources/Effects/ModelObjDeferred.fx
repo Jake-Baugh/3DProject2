@@ -37,6 +37,7 @@ cbuffer cbEveryFrame
 	matrix	gMVP;
 };
 
+float4 gTintColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
 Texture2D gTexture;
 Texture2D gGlowMap;
 float Ka;
@@ -85,7 +86,7 @@ PS_OUTPUT PS(PS_INPUT input)
 
 	float3 glowColor = gGlowMap.Sample(LinearSampler, input.TexCoord).xyz;
 
-	output.Color = float4(gTexture.Sample(LinearSampler, input.TexCoord).xyz, glowColor.x);
+	output.Color = float4(gTexture.Sample(LinearSampler, input.TexCoord).xyz, glowColor.x) * gTintColor;
 	output.PositionW = float4(input.PositionW.xyz, glowColor.y);
 	output.NormalW = float4(input.NormalW.xyz, glowColor.z);
 	output.Material = float4(Ka, Kd, Ks, A);

@@ -57,7 +57,9 @@ private:
 	ProjectionDescription mProjectionDescription;
 	BezierCurve mCameraSpline;
 	Camera::Camera mCamera;
-	Camera::CameraController* mCameraController;
+	Camera::CameraController* mSplineController;
+	Camera::CameraController* mFreeController;
+	Camera::CameraController* mCurrentCamera;
 
 	DeferredRenderer mDeferredRenderer;
 	int mBufferToRender;
@@ -65,6 +67,8 @@ private:
 	Scene::Scene mScene;
 	Helper::DrawableFrustum mDrawableFrustum;
 	Helper::MorphAnimation* mAnimation;
+	float mAnimationRadius;
+	float mAnimationAngle;
 
 	// DEBUG
 	Helper::DrawableSpline mCameraCurve;
