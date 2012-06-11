@@ -1,3 +1,5 @@
+#include <cmath>
+#include <ctime>
 #include <Project.hpp>
 #include <Camera\CircleCameraController.hpp>
 #include <Camera\FreeCameraController.hpp>
@@ -41,6 +43,8 @@ Project::Project(HINSTANCE instance)
 	, mAnimation(NULL)
 	, mCameraCurve(mD3DContext.GetDevice(), &mCameraSpline) // DEBUG
 {
+	srand(time(NULL));
+
 	DirectionalLight dl;
 	dl.Direction = D3DXVECTOR4(0.0, -1.0, 0.0, 0.0f);
 	dl.Intensity = D3DXVECTOR4(0.5f, 0.0f, 0.5f, 0.0f);
@@ -49,14 +53,15 @@ Project::Project(HINSTANCE instance)
 	mDeferredRenderer.SetAmbientLight(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 	
 	const float RADIUS = 20;
-	D3DXVECTOR3 intensities[] = { D3DXVECTOR3(1.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 1.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DXVECTOR3(1.0f, 0.0f, 1.0f) };
+	const float INTENSITY = 0.6f;
+	D3DXVECTOR3 intensities[] = { D3DXVECTOR3(INTENSITY, 0.0f, 0.0f), D3DXVECTOR3(0.0f, INTENSITY, 0.0f), D3DXVECTOR3(0.0f, 0.0f, INTENSITY), D3DXVECTOR3(INTENSITY, 0.0f, INTENSITY) };
 	int pointLightCount = sizeof(intensities) / sizeof(intensities[0]);
 	for (int i = 0; i < pointLightCount; ++i)
 	{
 		double phi = 2.0 * D3DX_PI / pointLightCount;
 		
 		PointLight light;
-		light.Position = D3DXVECTOR4(RADIUS * cos(i * phi), 1.0f, RADIUS * sin(i * phi), 1.0f);
+		light.Position = D3DXVECTOR4(RADIUS * cos(i * phi), 10.0f, RADIUS * sin(i * phi), 1.0f);
 		light.Intensity = intensities[i];
 		light.Radius = 20.0f;
 
@@ -96,23 +101,31 @@ void Project::KeyPressed(Framework::ApplicationWindow* window, int keyCode)
 		break;
 
 		case VK_F2:
-			mBufferToRender = DeferredRenderer::C_GBUFFER_COLOR;
+			mBufferToRender = DeferredRenderer::GBuffer::Color;
 		break;
 
 		case VK_F3:
-			mBufferToRender = DeferredRenderer::C_GBUFFER_POSITION;
+			mBufferToRender = DeferredRenderer::GBuffer::Position;
 		break;
 
 		case VK_F4:
-			mBufferToRender = DeferredRenderer::C_GBUFFER_NORMAL;
+			mBufferToRender = DeferredRenderer::GBuffer::Normal;
 		break;
 
 		case VK_F5:
-			mBufferToRender = DeferredRenderer::C_GBUFFER_MATERIAL;
+			mBufferToRender = DeferredRenderer::GBuffer::Material;
 		break;
 
 		case VK_F6:
-			mBufferToRender = DeferredRenderer::C_GBUFFER_DEPTH;
+			mBufferToRender = DeferredRenderer::GBuffer::PreSSAO;
+		break;
+
+		case VK_F7:
+			mBufferToRender = DeferredRenderer::GBuffer::PostSSAO;
+		break;
+
+		case VK_F8:
+			mBufferToRender = DeferredRenderer::GBuffer::Depth;
 		break;
 
 		case 'F':
@@ -124,6 +137,10 @@ void Project::KeyPressed(Framework::ApplicationWindow* window, int keyCode)
 				mDebugFrustumDirection = mCamera.GetDirection();
 				mDrawableFrustum.Update(mCamera.GetPosition(), mCamera.GetDirection());
 			}
+		break;
+
+		case 'O':
+			mDeferredRenderer.ToggleSSAO(!mDeferredRenderer.GetSSAOToggle());
 		break;
 	}
 }
@@ -164,7 +181,7 @@ void Project::Draw(float dt)
 		mDrawableFrustum.Draw(mCamera);
 	}
 
-	mDeferredRenderer.EndDeferredState();
+	mDeferredRenderer.EndDeferredState(mCamera, mProjectionDescription.Frustum);
 	mDeferredRenderer.ApplyLightingPhase(mCamera);
 
 	mDeferredRenderer.BeginForwardState();

@@ -4,6 +4,18 @@
 
 namespace Helper
 {
+	float RandomFloat(float low, float high)
+	{
+		const int C_PRECISION = 1000;
+
+		float intervalSize = (high - low);
+		float r = static_cast<float>(rand() % (C_PRECISION + 1)) / static_cast<float>(C_PRECISION);
+		r *= intervalSize;
+		r += low;
+
+		return r;
+	}
+
 	D3DXMATRIX Frustum::CreatePerspectiveProjection() const
 	{
 		D3DXMATRIX result;

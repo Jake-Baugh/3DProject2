@@ -11,13 +11,15 @@ namespace Scene
 		, mGround(mDevice, C_SCENE_QUAD.GetWidth() * 0.5f)
 	{
 		// Hard code some geometry
+
 		mModels.push_back(new Resources::ModelObj(mDevice, "crossReal.obj", "", 1.0f));
 		mModels.push_back(new Resources::ModelObj(mDevice, "quadReal.obj", "", 1.0f));
 		mModels.push_back(new Resources::ModelObj(mDevice, "ringReal.obj", "", 1.0f));
 		mModels.push_back(new Resources::ModelObj(mDevice, "triangleReal.obj", "", 1.0f));
 		mModels.push_back(new Resources::ModelObj(mDevice, "wallSegment.obj", "", 0.5f));
+		mBTHLogo = new Resources::ModelObj(mDevice, "bth.obj", "");
 
-		const float RADIUS = 50.0f;
+		const float RADIUS = 120.0f;
 		const int N = 15;
 		const int MAX_MODEL = 4;
 		const double DT = 2 * D3DX_PI / N;
@@ -28,6 +30,14 @@ namespace Scene
 			D3DXMatrixTranslation(&world, RADIUS * cos(i * DT), 2.0f, RADIUS * sin(i * DT));
 
 			mGeometry.push_back(new Geometry(mDevice, mModels[i % MAX_MODEL], world));
+		}
+
+		D3DXMATRIX world;
+		D3DXMatrixRotationX(&world, D3DX_PI * 0.5f);
+		mGeometry.push_back(new Geometry(mDevice, mBTHLogo, world));
+
+		for (int i = 0; i < mGeometry.size(); ++i)
+		{
 			mQuadTree.AddGeometry(mGeometry[i]);
 		}
 	}
@@ -38,6 +48,7 @@ namespace Scene
 			SafeDelete(mGeometry[i]);
 		for (int i = 0; i < mModels.size(); ++i)
 			SafeDelete(mModels[i]);
+		SafeDelete(mBTHLogo);
 	}
 
 	void Scene::DrawDeferred(const Camera::Camera& camera, const Helper::Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection)

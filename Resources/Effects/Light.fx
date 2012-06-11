@@ -33,11 +33,14 @@ struct PointLight
 	float Radius;
 };
 
+matrix gView;
+matrix gProjection;
 
 Texture2D gColorBuffer;
 Texture2D gPositionBuffer;
 Texture2D gNormalBuffer;
 Texture2D gMaterialBuffer;
+Texture2D gSSAOBuffer;
 
 float3 gAmbientLightIntensity;
 DirectionalLight gDirectionalLight;
@@ -45,6 +48,9 @@ PointLight gPointLights[100];
 int gPointLightCount;
 
 float3 gEyePositionW;
+
+bool gSSAOToggle = true;
+
 
 
 /** Render states */
@@ -115,13 +121,14 @@ float Fb(float dotp, float shininess)
 {
 	if(dotp > 0)
 	{
-		return pow(dotp, shininess);
+		return pow(abs(dotp), shininess);
 	}
 	else
 	{
 		return 0; // kill the lighting
 	}
 }
+
 
 /** Shader implementation */
 PS_INPUT VS(VS_INPUT input)
@@ -171,20 +178,14 @@ float4 PS(PS_INPUT input) : SV_TARGET0
 	float4 glowColor = float4(sampledColor.w, sampledPosition.w, sampledNormal.w, 0.0f);
 	color = (0.8f * albedo) + (0.2f * color);
 	color += glowColor;
+
+	// apply ssao
+	if (gSSAOToggle)
+	{
+		color *= gSSAOBuffer.Sample(LinearSampler, input.TexCoord).r;
+	}
 	
 	return color;
-
-	/*
-	float4 result = float4(CalculateDirectionalLight(gDirectionalLight.Intensity.xyz, posW, albedo, normalW, material, gDirectionalLight.DirectionW.xyz), 0.0f);
-	for (int i = 0; i < gPointLightCount; ++i)
-	{
-		result += float4(CalculatePointLight(i, posW, albedo, normalW, material), 0.0f);
-	}
-
-	return result;
-	*/
-	//return float4(1.0f, 1.0f, 1.0f, 1.0f);
-	//return C * saturate(dot(N, L)) * float4(gLightIntensity, 1.0f);
 }
 
 

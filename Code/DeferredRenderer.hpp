@@ -8,6 +8,8 @@
 #include <Framework\VertexBuffer.hpp>
 #include <Helper\Global.hpp>
 #include <Camera\Camera.hpp>
+#include <Resources\Texture.hpp>
+#include <SSAO.hpp>
 
 struct DirectionalLight
 {
@@ -25,13 +27,7 @@ struct PointLight
 class DeferredRenderer 
 {
 public:
-	static const int C_GBUFFER_COLOR;
-	static const int C_GBUFFER_POSITION;
-	static const int C_GBUFFER_NORMAL;
-	static const int C_GBUFFER_MATERIAL;
-	static const int C_GBUFFER_DEPTH;
-	static const int C_GBUFFER_COUNT;
-	
+	enum GBuffer { Color, Position, Normal, Material, PreSSAO, PostSSAO, Depth, Count };
 
 	DeferredRenderer(Framework::D3DContext* d3dContext, int width, int height);
 	~DeferredRenderer() throw();
@@ -40,8 +36,11 @@ public:
 	size_t AddPointLight(const PointLight& light);
 	void SetAmbientLight(const D3DXVECTOR3& light);
 
+	void ToggleSSAO(bool ssaoOn);
+	bool GetSSAOToggle() const;
+
 	void BeginDeferredState();
-	void EndDeferredState();
+	void EndDeferredState(const Camera::Camera& camera, const Helper::Frustum& frustum);
 	void ApplyLightingPhase(const Camera::Camera& camera);
 	void BeginForwardState();
 	void EndForwardState();
@@ -76,6 +75,8 @@ private:
 	ID3D10Texture2D* mPositionBuffer;
 	ID3D10Texture2D* mNormalBuffer;
 	ID3D10Texture2D* mMaterialBuffer;
+	ID3D10Texture2D* mSSAOBuffer;
+	ID3D10Texture2D* mSSAOPostBuffer;
 	ID3D10Texture2D* mDepthStencilBuffer;
 
 	// Render/Depth views for rendering to the buffers
@@ -83,6 +84,8 @@ private:
 	ID3D10RenderTargetView* mPositionView;
 	ID3D10RenderTargetView* mNormalView;
 	ID3D10RenderTargetView* mMaterialView;
+	ID3D10RenderTargetView* mSSAOView;
+	ID3D10RenderTargetView* mSSAOPostView;
 	ID3D10DepthStencilView* mDepthStencilView;
 
 	// Shader resource views for reading from the buffers
@@ -90,6 +93,8 @@ private:
 	ID3D10ShaderResourceView* mPositionSRV;
 	ID3D10ShaderResourceView* mNormalSRV;
 	ID3D10ShaderResourceView* mMaterialSRV;
+	ID3D10ShaderResourceView* mSSAOSRV;
+	ID3D10ShaderResourceView* mSSAOPostSRV;
 	ID3D10ShaderResourceView* mDepthStencilSRV;
 
 	// Contains the G buffers: color, normal and depth.
@@ -100,6 +105,13 @@ private:
 
 	// Contains the G buffer shader resource views: color, normal and depth.
 	std::vector<ID3D10ShaderResourceView*> mShaderResourceViews;
+
+
+	// For applying the SSAO effect
+	SSAO mSSAO;
+
+	// Whether SSAO should be on or off
+	bool mSSAOToggle;
 
 
 	// Keeps track of the lights in the scene
