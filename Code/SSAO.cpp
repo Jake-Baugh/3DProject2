@@ -95,9 +95,6 @@ void SSAO::DrawSSAOBuffer(const Camera::Camera& camera, const Helper::Frustum& f
 		mEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mDevice);
 		mDevice->Draw(mFullscreenQuad.GetElementCount(), 0);
 	}
-
-	
-
 }
 
 void SSAO::BlurSSAOBuffer(const Camera::Camera& camera, ID3D10ShaderResourceView* normalBuffer, ID3D10ShaderResourceView* depthBuffer, ID3D10ShaderResourceView* SSAOBuffer)

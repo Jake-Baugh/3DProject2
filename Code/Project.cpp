@@ -55,7 +55,7 @@ Project::Project(HINSTANCE instance)
 	mDeferredRenderer.SetDirectionalLight(dl);
 	mDeferredRenderer.SetAmbientLight(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 	
-	mCameraSpline.AddSegment(20, D3DXVECTOR3(-20, 27, -20), D3DXVECTOR3(-20, 33, 0));
+	mCameraSpline.AddSegment(20, D3DXVECTOR3(-20, 27, -20), D3DXVECTOR3(-20, 23, 0));
 
 	const float RADIUS = 20;
 	const float INTENSITY = 0.6f;
@@ -144,11 +144,14 @@ void Project::KeyPressed(Framework::ApplicationWindow* window, int keyCode)
 				mDrawableFrustum.Update(mCamera.GetPosition(), mCamera.GetDirection());
 			}
 		break;
+
 		case 'C':
 			if (mCurrentCamera == mSplineController)
 				mCurrentCamera = mFreeController;
 			else
 				mCurrentCamera = mSplineController;
+		break;
+
 		case 'O':
 			mDeferredRenderer.ToggleSSAO(!mDeferredRenderer.GetSSAOToggle());
 		break;

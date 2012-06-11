@@ -197,7 +197,8 @@ void DeferredRenderer::BeginDeferredState()
 
 void DeferredRenderer::EndDeferredState(const Camera::Camera& camera, const Helper::Frustum& frustum)
 {
-	mD3DContext->ResetRenderTarget();
+	/*ID3D10ShaderResourceView* nullSRV = NULL;
+	mDevice->PSSetShaderResources(0, 1, &nullSRV);*/
 
 	mDevice->OMSetRenderTargets(1, &mSSAOView, NULL);
 	mDevice->ClearRenderTargetView(mSSAOView, D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
@@ -216,8 +217,10 @@ void DeferredRenderer::EndDeferredState(const Camera::Camera& camera, const Help
 		//mSSAO.BlurSSAOBuffer(camera, mNormalSRV, mDepthStencilSRV, mSSAOSRV);
 	}
 
-	ID3D10ShaderResourceView* nullSRV = NULL;
-	mDevice->PSSetShaderResources(0, 1, &nullSRV);
+	//ID3D10ShaderResourceView* nullSRV = NULL;
+	//mDevice->PSSetShaderResources(0, 1, &nullSRV);
+
+	mD3DContext->ResetRenderTarget();
 }
 
 void DeferredRenderer::ApplyLightingPhase(const Camera::Camera& camera)
