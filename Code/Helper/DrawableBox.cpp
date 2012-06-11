@@ -19,19 +19,31 @@ namespace Helper
 	{
 		mBox = box;
 
-		float halfWidth = mBox.GetWidth() * 0.5f;
-		float halfHeight = mBox.GetHeight() * 0.5f;
-		float halfDepth = mBox.GetDepth() * 0.5f;
+		float width = mBox.GetWidth();
+		float height = mBox.GetHeight();
+		float depth = mBox.GetDepth();
 
-		D3DXVECTOR3 nearVertices[] = { D3DXVECTOR3(-halfWidth, -halfHeight, -halfDepth)
-									 , D3DXVECTOR3(halfWidth, -halfHeight, -halfDepth)
-									 , D3DXVECTOR3(-halfWidth, halfHeight, -halfDepth)
-									 , D3DXVECTOR3(halfWidth, halfHeight, -halfDepth) };
+		D3DXVECTOR3 nearVertices[] = { D3DXVECTOR3(mBox.Corners[0].X, mBox.Corners[0].Y, mBox.Corners[0].Z)
+									 , D3DXVECTOR3(mBox.Corners[0].X + width, mBox.Corners[0].Y, mBox.Corners[0].Z)
+									 , D3DXVECTOR3(mBox.Corners[0].X, mBox.Corners[0].Y + height, mBox.Corners[0].Z)
+									 , D3DXVECTOR3(mBox.Corners[0].X + width, mBox.Corners[0].Y + height, mBox.Corners[0].Z) };
+
+		D3DXVECTOR3 farVertices[] =  { D3DXVECTOR3(mBox.Corners[0].X, mBox.Corners[0].Y, mBox.Corners[1].Z)
+									 , D3DXVECTOR3(mBox.Corners[0].X + width, mBox.Corners[0].Y, mBox.Corners[1].Z)
+									 , D3DXVECTOR3(mBox.Corners[0].X, mBox.Corners[0].Y + height, mBox.Corners[1].Z)
+									 , D3DXVECTOR3(mBox.Corners[0].X + width, mBox.Corners[0].Y + height, mBox.Corners[1].Z) };
+
+		/*
+		D3DXVECTOR3 nearVertices[] = { D3DXVECTOR3(mBox.Corners[0].X - halfWidth, mBox.Corners[0].Y - halfHeight, mBox.Corners[0].Z - halfDepth)
+									 , D3DXVECTOR3(mBox.Corners[0].X + halfWidth, mBox.Corners[0].Y - halfHeight, mBox.Corners[0].Z - halfDepth)
+									 , D3DXVECTOR3(mBox.Corners[0].X - halfWidth, mBox.Corners[0].Y + halfHeight, mBox.Corners[0].Z - halfDepth)
+									 , D3DXVECTOR3(mBox.Corners[0].X + halfWidth, mBox.Corners[0].Y + halfHeight, mBox.Corners[0].Z - halfDepth) };
 
 		D3DXVECTOR3 farVertices[] =  { D3DXVECTOR3(-halfWidth, -halfHeight, halfDepth)
 									 , D3DXVECTOR3(halfWidth, -halfHeight, halfDepth)
 									 , D3DXVECTOR3(-halfWidth, halfHeight, halfDepth)
 									 , D3DXVECTOR3(halfWidth, halfHeight, halfDepth) };
+		*/
 
 		
 		D3DXVECTOR3 vertices[] = { nearVertices[0], nearVertices[1]
@@ -59,8 +71,11 @@ namespace Helper
 
 	void DrawableBox::Draw(const Camera::Camera& camera, const D3DXMATRIX& world)
 	{
-		mEffect.SetVariable("gWorld", world);
-		mEffect.SetVariable("gMVP", world * camera.GetViewProjection());
+		//D3DXMATRIX translation;
+		//D3DXMatrixTranslation(&translation, mBox.Corners[0].X, mBox.Corners[0].Y, mBox.Corners[0].Z);
+
+		mEffect.SetVariable("gWorld", /*translation * */world);
+		mEffect.SetVariable("gMVP", /*translation * */world * camera.GetViewProjection());
 
 		mBuffer.Bind();
 		for (unsigned int p = 0; p < mEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)

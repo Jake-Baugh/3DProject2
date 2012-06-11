@@ -12,6 +12,10 @@ namespace Helper
 		, mFrustumBuffer(mDevice)
 		, mEffect(mDevice, "Resources/Effects/Debug.fx")
 	{
+		Framework::Effect::InputLayoutVector inputLayout;
+		inputLayout.push_back(Framework::Effect::InputLayoutElement("POSITION", DXGI_FORMAT_R32G32B32_FLOAT));
+		mEffect.GetTechniqueByIndex(0).GetPassByIndex(0).SetInputLayout(inputLayout);
+
 		SetFrustum(frustum);
 		UpdateWorld();
 	}

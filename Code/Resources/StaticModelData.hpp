@@ -35,7 +35,6 @@ namespace Resources
 		bool LoadMaterial(const std::string& filename);
 
 		void DrawAABB(const Camera::Camera& camera, const D3DXMATRIX& world);
-
 	private:
 		ID3D10Device* mDevice;
 		Helper::DrawableBox mDrawableBox;

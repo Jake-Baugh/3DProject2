@@ -7,7 +7,7 @@ namespace Scene
 
 	Scene::Scene(ID3D10Device* device)
 		: mDevice(device)
-		, mQuadTree(C_SCENE_QUAD, 5)
+		, mQuadTree(C_SCENE_QUAD, 1)
 		, mGround(mDevice, C_SCENE_QUAD.GetWidth() * 0.5f)
 	{
 		// Hard code some geometry
@@ -17,7 +17,7 @@ namespace Scene
 		mModels.push_back(new Resources::ModelObj(mDevice, "triangleReal.obj", "", 1.0f));
 		mModels.push_back(new Resources::ModelObj(mDevice, "wallSegment.obj", "", 0.5f));
 
-		const float RADIUS = 50.0f;
+		const float RADIUS = 100.0f;
 		const int N = 15;
 		const int MAX_MODEL = 4;
 		const double DT = 2 * D3DX_PI / N;
@@ -42,15 +42,6 @@ namespace Scene
 
 	void Scene::DrawDeferred(const Camera::Camera& camera, const Helper::Frustum& frustum, const D3DXVECTOR3& frustumPosition, const D3DXVECTOR3& frustumDirection)
 	{
-		/*
-		mGround.Draw(camera);
-		size_t size = mGeometry.size();
-		for (int i = 0; i < size; ++i)
-		{
-			mGeometry[i]->Draw(camera);
-		}
-		*/
-
 		std::set<Geometry*> visibleGeometry;
 
 		mQuadTree.GetVisibleGeometry(frustum, frustumPosition, frustumDirection, visibleGeometry);
@@ -59,9 +50,8 @@ namespace Scene
 		for (std::set<Geometry*>::iterator it = visibleGeometry.begin(); it != visibleGeometry.end(); ++it)
 		{
 			(*it)->DrawDeferred(camera);
+			(*it)->DrawAABB(camera);
 		}
-
-		
 	}
 
 	void Scene::DrawForwarded(const Camera::Camera& camera)

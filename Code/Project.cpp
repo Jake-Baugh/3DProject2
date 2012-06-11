@@ -34,7 +34,7 @@ Project::Project(HINSTANCE instance)
 	, mCamera(mProjectionDescription.Frustum.CreatePerspectiveProjection(), D3DXVECTOR3(0.0f, 30.0f, -20.0f), D3DXVECTOR3(0.0f, -1.0f, 0.0f))
 	//, mCameraController(new Camera::SplineCameraController(&mCamera, &mCameraSpline, Camera::SplineCameraController::Spline))
 	, mCameraController(new Camera::FreeCameraController(&mCamera))
-	, mDeferredRenderer(&mD3DContext, 1024, 768)
+	, mDeferredRenderer(&mD3DContext, mWindow.GetClientWidth(), mWindow.GetClientHeight())
 	, mBufferToRender(-1)
 	, mScene(mD3DContext.GetDevice())
 	, mDrawableFrustum(mD3DContext.GetDevice(), ProjectionDescription(mWindow.GetClientWidth(), mWindow.GetClientHeight()).Frustum, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, -1.0f))
@@ -142,16 +142,11 @@ void Project::Draw(float dt)
 	mDeferredRenderer.BeginDeferredState();
 
 	if (mUseDebugFrustum)
-	{
 		mScene.DrawDeferred(mCamera, mProjectionDescription.Frustum, mDebugFrustumPosition, mDebugFrustumDirection);
-	}
 	else
-	{
 		mScene.DrawDeferred(mCamera, mProjectionDescription.Frustum, mCamera.GetPosition(), mCamera.GetDirection());
-	}
 
 	D3DXMATRIX world;
-	//D3DXMatrixTranslation(&world, 0, 10, 0);
 	D3DXMatrixIdentity(&world);
 
 	mAnimation->Draw(mCamera, world);
@@ -160,19 +155,13 @@ void Project::Draw(float dt)
 	//mCameraCurve.Draw(mCamera);
 
 	if (mUseDebugFrustum)
-	{
 		mDrawableFrustum.Draw(mCamera);
-	}
 
 	mDeferredRenderer.EndDeferredState();
 	mDeferredRenderer.ApplyLightingPhase(mCamera);
 
 	mDeferredRenderer.BeginForwardState();
 	mScene.DrawForwarded(mCamera);
-
-	/*if (mUseDebugFrustum)
-		mDrawableFrustum.DrawForward;*/
-
 	mDeferredRenderer.EndForwardState();
 
 	if (mBufferToRender >= 0)
