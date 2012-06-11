@@ -11,6 +11,7 @@ namespace Scene
 		, mGround(mDevice, C_SCENE_QUAD.GetWidth() * 0.5f)
 	{
 		// Hard code some geometry
+
 		mModels.push_back(new Resources::ModelObj(mDevice, "crossReal.obj", "", 1.0f));
 		mModels.push_back(new Resources::ModelObj(mDevice, "quadReal.obj", "", 1.0f));
 		mModels.push_back(new Resources::ModelObj(mDevice, "ringReal.obj", "", 1.0f));

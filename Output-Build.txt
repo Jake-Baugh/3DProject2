@@ -1,0 +1,40 @@
+﻿1>------ Build started: Project: 3DProject2, Configuration: Debug Win32 ------
+1>Build started 2012-06-09 17:54:47.
+1>InitializeBuildStatus:
+1>  Creating "Build\x86\Debug\3DProject2.unsuccessfulbuild" because "AlwaysCreate" was specified.
+1>ClCompile:
+1>  Camera.cpp
+1>  Generating Code...
+1>  Compiling...
+1>  SplineCameraController.cpp
+1>c:\temp\thsi\3dproject2\code\camera\splinecameracontroller.cpp(31): warning C4482: nonstandard extension used: enum 'Camera::SplineCameraController::Targeting' used in qualified name
+1>c:\temp\thsi\3dproject2\code\camera\splinecameracontroller.cpp(34): warning C4482: nonstandard extension used: enum 'Camera::SplineCameraController::Targeting' used in qualified name
+1>  FreeCameraController.cpp
+1>c:\temp\thsi\3dproject2\code\camera\freecameracontroller.cpp(8): warning C4305: 'initializing' : truncation from 'double' to 'const float'
+1>c:\temp\thsi\3dproject2\code\camera\freecameracontroller.cpp(56): warning C4244: '=' : conversion from 'const double' to 'float', possible loss of data
+1>c:\temp\thsi\3dproject2\code\camera\freecameracontroller.cpp(58): warning C4244: '=' : conversion from 'const double' to 'float', possible loss of data
+1>c:\temp\thsi\3dproject2\code\camera\freecameracontroller.cpp(72): warning C4244: 'argument' : conversion from 'int' to 'FLOAT', possible loss of data
+1>c:\temp\thsi\3dproject2\code\camera\freecameracontroller.cpp(73): warning C4244: 'argument' : conversion from 'int' to 'FLOAT', possible loss of data
+1>  CircleCameraController.cpp
+1>c:\temp\thsi\3dproject2\code\camera\circlecameracontroller.cpp(6): warning C4305: 'initializing' : truncation from 'double' to 'const float'
+1>  CameraController.cpp
+1>  Generating Code...
+1>  SSAO.cpp
+1>c:\temp\thsi\3dproject2\code\ssao.cpp(43): warning C4018: '<' : signed/unsigned mismatch
+1>  Project.cpp
+1>c:\temp\thsi\3dproject2\code\project.cpp(25): warning C4305: '=' : truncation from 'double' to 'float'
+1>c:\temp\thsi\3dproject2\code\project.cpp(46): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+1>c:\temp\thsi\3dproject2\code\project.cpp(64): warning C4244: 'argument' : conversion from 'double' to 'FLOAT', possible loss of data
+1>c:\temp\thsi\3dproject2\code\project.cpp(64): warning C4244: 'argument' : conversion from 'double' to 'FLOAT', possible loss of data
+1>c:\temp\thsi\3dproject2\code\project.cpp(176): error C2660: 'DeferredRenderer::EndDeferredState' : function does not take 0 arguments
+1>  main.cpp
+1>  DeferredRenderer.cpp
+1>c:\temp\thsi\3dproject2\code\deferredrenderer.cpp(162): warning C4018: '<' : signed/unsigned mismatch
+1>c:\temp\thsi\3dproject2\code\deferredrenderer.cpp(190): warning C4018: '<' : signed/unsigned mismatch
+1>c:\temp\thsi\3dproject2\code\deferredrenderer.cpp(195): warning C4018: '<' : signed/unsigned mismatch
+1>  Generating Code...
+1>
+1>Build FAILED.
+1>
+1>Time Elapsed 00:00:17.31
+========== Build: 0 succeeded, 1 failed, 0 up-to-date, 0 skipped ==========

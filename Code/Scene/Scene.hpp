@@ -23,6 +23,7 @@ namespace Scene
 
 		QuadNode mQuadTree;
 		Ground mGround;
+
 		std::vector<Resources::ModelObj*> mModels;
 		std::vector<Geometry*> mGeometry;
 	};

@@ -19,6 +19,8 @@ namespace Helper
 		return r.bottom - r.top;
 	}
 
+	float RandomFloat(float low, float high);
+
 
 
 	/**

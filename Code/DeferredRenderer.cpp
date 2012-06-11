@@ -2,13 +2,6 @@
 #include <Helper\r2tk\r2-exception.hpp>
 #include <Helper\r2tk\r2-assert.hpp>
 
-const int DeferredRenderer::C_GBUFFER_COLOR = 0;
-const int DeferredRenderer::C_GBUFFER_POSITION = 1;
-const int DeferredRenderer::C_GBUFFER_NORMAL = 2;
-const int DeferredRenderer::C_GBUFFER_MATERIAL = 3;
-const int DeferredRenderer::C_GBUFFER_DEPTH = 4;
-const int DeferredRenderer::C_GBUFFER_COUNT = 5;
-
 DeferredRenderer::DeferredRenderer(Framework::D3DContext* d3dContext, int width, int height)
 	: mD3DContext(d3dContext)
 	, mDevice(mD3DContext->GetDevice())
@@ -17,6 +10,8 @@ DeferredRenderer::DeferredRenderer(Framework::D3DContext* d3dContext, int width,
 	, mLightEffect(mDevice, "Resources/Effects/Light.fx")
 	, mBufferEffect(mDevice, "Resources/Effects/GBuffer.fx")
 	, mFullscreenQuad(mDevice)
+	, mSSAO(mDevice, mD3DContext->GetViewportWidth(mD3DContext->GetActiveViewport()), mD3DContext->GetViewportHeight(mD3DContext->GetActiveViewport()))
+	, mSSAOToggle(true)
 {
 	// Create the fullscreen quad VB
 	DeferredRenderer::QuadVertex vertices[] = { { D3DXVECTOR2(-1.0f, -1.0f), D3DXVECTOR2(0.0f, 1.0f) }
@@ -46,12 +41,16 @@ DeferredRenderer::DeferredRenderer(Framework::D3DContext* d3dContext, int width,
 	mPositionBuffer = CreateTexture(DXGI_FORMAT_R32G32B32A32_FLOAT, D3D10_BIND_RENDER_TARGET);
 	mNormalBuffer = CreateTexture(DXGI_FORMAT_R32G32B32A32_FLOAT, D3D10_BIND_RENDER_TARGET);
 	mMaterialBuffer = CreateTexture(DXGI_FORMAT_R32G32B32A32_FLOAT, D3D10_BIND_RENDER_TARGET);
+	mSSAOBuffer = CreateTexture(DXGI_FORMAT_R32G32B32A32_FLOAT, D3D10_BIND_RENDER_TARGET);
+	mSSAOPostBuffer = CreateTexture(DXGI_FORMAT_R32G32B32A32_FLOAT, D3D10_BIND_RENDER_TARGET);
 	mDepthStencilBuffer = CreateTexture(DXGI_FORMAT_R32_TYPELESS, D3D10_BIND_DEPTH_STENCIL);
 
 	mGBuffers.push_back(mColorBuffer);
 	mGBuffers.push_back(mPositionBuffer);
 	mGBuffers.push_back(mNormalBuffer);
 	mGBuffers.push_back(mMaterialBuffer);
+	mGBuffers.push_back(mSSAOBuffer);
+	mGBuffers.push_back(mSSAOPostBuffer);
 	mGBuffers.push_back(mDepthStencilBuffer);
 
 
@@ -60,6 +59,8 @@ DeferredRenderer::DeferredRenderer(Framework::D3DContext* d3dContext, int width,
 	mPositionView = CreateRenderTargetView(mPositionBuffer);
 	mNormalView = CreateRenderTargetView(mNormalBuffer);
 	mMaterialView = CreateRenderTargetView(mMaterialBuffer);
+	mSSAOView = CreateRenderTargetView(mSSAOBuffer);
+	mSSAOPostView = CreateRenderTargetView(mSSAOPostBuffer);
 
 	mRenderTargets.push_back(mColorView);
 	mRenderTargets.push_back(mPositionView);
@@ -82,12 +83,16 @@ DeferredRenderer::DeferredRenderer(Framework::D3DContext* d3dContext, int width,
 	mPositionSRV = CreateShaderResourceView(mPositionBuffer, DXGI_FORMAT_R32G32B32A32_FLOAT);
 	mNormalSRV = CreateShaderResourceView(mNormalBuffer, DXGI_FORMAT_R32G32B32A32_FLOAT);
 	mMaterialSRV = CreateShaderResourceView(mMaterialBuffer, DXGI_FORMAT_R32G32B32A32_FLOAT);
+	mSSAOSRV = CreateShaderResourceView(mSSAOBuffer, DXGI_FORMAT_R32G32B32A32_FLOAT);
+	mSSAOPostSRV = CreateShaderResourceView(mSSAOPostBuffer, DXGI_FORMAT_R32G32B32A32_FLOAT);
 	mDepthStencilSRV = CreateShaderResourceView(mDepthStencilBuffer, DXGI_FORMAT_R32_FLOAT);
 
 	mShaderResourceViews.push_back(mColorSRV);
 	mShaderResourceViews.push_back(mPositionSRV);
 	mShaderResourceViews.push_back(mNormalSRV);
 	mShaderResourceViews.push_back(mMaterialSRV);
+	mShaderResourceViews.push_back(mSSAOSRV);
+	mShaderResourceViews.push_back(mSSAOPostSRV);
 	mShaderResourceViews.push_back(mDepthStencilSRV);
 }
 
@@ -112,8 +117,25 @@ DeferredRenderer::~DeferredRenderer() throw()
 	SafeRelease(mDepthStencilBuffer);
 	SafeRelease(mDepthStencilView);
 	SafeRelease(mDepthStencilSRV);
+
+	SafeRelease(mSSAOBuffer);
+	SafeRelease(mSSAOView);
+	SafeRelease(mSSAOSRV);
+
+	SafeRelease(mSSAOPostBuffer);
+	SafeRelease(mSSAOPostView);
+	SafeRelease(mSSAOPostSRV);
 }
 
+void DeferredRenderer::ToggleSSAO(bool ssaoOn)
+{
+	mSSAOToggle = ssaoOn;
+}
+
+bool DeferredRenderer::GetSSAOToggle() const
+{
+	return mSSAOToggle;
+}
 
 void DeferredRenderer::SetDirectionalLight(const DirectionalLight& light)
 {
@@ -173,9 +195,29 @@ void DeferredRenderer::BeginDeferredState()
 	mDevice->ClearDepthStencilView(mDepthStencilView, D3D10_CLEAR_DEPTH | D3D10_CLEAR_STENCIL, 1.0f, 0);
 }
 
-void DeferredRenderer::EndDeferredState()
+void DeferredRenderer::EndDeferredState(const Camera::Camera& camera, const Helper::Frustum& frustum)
 {
 	mD3DContext->ResetRenderTarget();
+
+	mDevice->OMSetRenderTargets(1, &mSSAOView, NULL);
+	mDevice->ClearRenderTargetView(mSSAOView, D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
+
+	if (mSSAOToggle)
+	{
+		mSSAO.DrawSSAOBuffer(camera, frustum, mPositionSRV, mNormalSRV, mDepthStencilSRV);
+		
+		//// Unbind from pixel shader
+		//ID3D10ShaderResourceView* nullSRV = NULL;
+		//mDevice->PSSetShaderResources(0, 1, &nullSRV);
+		//
+		//mDevice->OMSetRenderTargets(1, &mSSAOPostView, NULL);
+		//mDevice->ClearRenderTargetView(mSSAOPostView, D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
+
+		//mSSAO.BlurSSAOBuffer(camera, mNormalSRV, mDepthStencilSRV, mSSAOSRV);
+	}
+
+	ID3D10ShaderResourceView* nullSRV = NULL;
+	mDevice->PSSetShaderResources(0, 1, &nullSRV);
 }
 
 void DeferredRenderer::ApplyLightingPhase(const Camera::Camera& camera)
@@ -187,13 +229,18 @@ void DeferredRenderer::ApplyLightingPhase(const Camera::Camera& camera)
 	mDevice->OMSetRenderTargets(1, &backBuffer, NULL);
 	mDevice->ClearRenderTargetView(backBuffer, D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
 
+	mLightEffect.SetVariable("gView", camera.GetView());
+	mLightEffect.SetVariable("gProjection", camera.GetProjection());
+
 	mLightEffect.SetVariable("gAmbientLightIntensity", mAmbientLight);
-	mLightEffect.SetVariable("gEyePosition", camera.GetPosition());
+	mLightEffect.SetVariable("gEyePositionW", camera.GetPosition());
 
 	mLightEffect.SetVariable("gColorBuffer", mColorSRV);
 	mLightEffect.SetVariable("gPositionBuffer", mPositionSRV);
 	mLightEffect.SetVariable("gNormalBuffer", mNormalSRV);
 	mLightEffect.SetVariable("gMaterialBuffer", mMaterialSRV);
+	mLightEffect.SetVariable("gSSAOBuffer", mSSAOSRV);
+	mLightEffect.SetVariable("gSSAOToggle", mSSAOToggle);
 
 	mFullscreenQuad.Bind();
 	for (unsigned int p = 0; p < mLightEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)
@@ -258,7 +305,9 @@ ID3D10ShaderResourceView* DeferredRenderer::GetDepthStencilBuffer() const
 
 ID3D10ShaderResourceView* DeferredRenderer::GetGBufferByIndex(unsigned int index) const
 {
-	r2AssertM(index <= C_GBUFFER_COUNT, "Invalid G buffer index");
+
+	r2AssertM(index <= GBuffer::Count, "Invalid G buffer index");
+
 	return mShaderResourceViews[index];
 }
 
