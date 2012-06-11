@@ -2,7 +2,7 @@
 	File: SSAO.fx
 	Created on: 2012-06-09
 
-	Inspired by Frank D. Luna
+	Inspired by GameDev.net
 */
 
 
@@ -21,12 +21,16 @@ struct PS_INPUT
 	float2 TexCoord : TEXCOORD1;
 };
 
+
 cbuffer cbEveryFrame
 {
 	matrix gView;
 	matrix gProjTex;
 	float4 gOffsetVectors[14];
 	float4 gFrustumFarCorners[4];
+
+	int gScreenWidth;
+	int gScreenHeight;
 
 	// SSAO constants
 	int gSampleCount = 14;
@@ -73,22 +77,73 @@ SamplerState RandomSampler
 
 /** Helper functions */
 
-/**
-	Make a linear decrement of occlusion by distance.
-	O = f(distZ)
-*/
-float OcclusionFunction(float distZ)
+/** SSAO from GameDev */
+float3 GetPosition(float2 uv)
 {
-	float occlusion = 0.0f;
+	float4 pos = float4(gPositionBuffer.Sample(NormalSampler, uv).xyz, 1.0f);
 
-	if (distZ > gSurfaceEpsilon)
+	return mul(pos, gView).xyz;
+}
+float3 GetNormal(float2 uv)
+{
+	float4 nor = float4(gNormalBuffer.Sample(NormalSampler, uv).xyz, 0.0f);
+
+	nor = mul(nor, gView);
+
+	return normalize(nor.xyz * 2.0f - 1.0f);
+}
+float2 GetRandom(float2 uv)
+{
+	float2 screenSize = float2(gScreenWidth, gScreenHeight);
+	
+	float2 rand = gRandomBuffer.Sample(RandomSampler, screenSize * uv / 256.0f).xy;
+	return normalize(rand * 2.0f - 1.0f);
+}
+
+
+float DoAmbientOcclusion(float2 tcoord, float2 uv, float3 p, float3 cnorm)
+{
+	float scale = 1.0f;
+	float bias = 0.0f;
+	float intensity = 1.0f;
+
+	float3 diff = GetPosition(tcoord + uv) - p;
+	const float3 v = normalize(diff);
+	const float d = length(diff) * scale;
+
+	return max(0.0f, dot(cnorm, v) - bias * (1.0f / (1.0f + d)) * intensity);
+}
+
+float4 SSAOGameDev(PS_INPUT input)
+{
+	float sampleRad = 1.0f;
+	
+	const float2 vec[4] = { float2(1, 0), float2(-1, 0), float2(0, 1), float2(0, -1) };
+	float3 positionV = GetPosition(input.TexCoord);
+	float3 normalV = GetNormal(input.TexCoord);
+	float2 rand = GetRandom(input.TexCoord);
+
+	float ao = 0.0f;
+	float rad = sampleRad / positionV.z;
+
+	//** SSAO Calculation */
+	int iterations = 4;
+	for (int j = 0; j < iterations; ++j)
 	{
-		float fadeLength = gOcclusionFadeEnd - gOcclusionFadeStart;
-		occlusion = saturate( (gOcclusionFadeEnd - distZ) / fadeLength);
+		float2 coord1 = reflect(vec[j], rand) * rad;
+		float2 coord2 = float2(coord1.x * 0.707 - coord1.y * 0.707, coord1.x * 0.707 + coord1.y * 0.707);
+
+		ao += DoAmbientOcclusion(input.TexCoord, coord1 * 0.25f, positionV.xyz, normalV.xyz);
+		ao += DoAmbientOcclusion(input.TexCoord, coord2 * 0.50f, positionV.xyz, normalV.xyz);
+		ao += DoAmbientOcclusion(input.TexCoord, coord1 * 0.75f, positionV.xyz, normalV.xyz);
+		ao += DoAmbientOcclusion(input.TexCoord, coord2 * 1.0f, positionV.xyz, normalV.xyz);
 	}
 
-	return occlusion;
+	ao /= (float)iterations * 4.0f;
+
+	return float4(ao, ao, ao, 1.0f);
 }
+
 
 
 /** Shader implementation */
@@ -103,49 +158,11 @@ PS_INPUT VS(VS_INPUT input)
 	return output;
 }
 
+
 float4 PS(PS_INPUT input) : SV_TARGET0
 {
-	float4 output;
-
-	//float3 positionW = gPositionBuffer.Sample(NormalSampler, input.TexCoord).xyz;
-	//float sourceDepth = mul(float4(positionW, 1.0f), gView).z;
-
-	float sourceDepth = gDepthBuffer.Sample(DepthSampler, input.TexCoord).r;									// pz
-	float3 sourceNormalV = normalize(mul(float4(gNormalBuffer.Sample(NormalSampler, input.TexCoord).xyz, 0.0f), gView));	// n
-	float3 sourcePositionV = (sourceDepth / input.ToFarPlane.z) * input.ToFarPlane;								// p
-
-	float3 randVec = 2.0f * gRandomBuffer.Sample(RandomSampler, 4.0f * input.TexCoord).rgb - 1.0f;				// [0, 1] -> [-1, 1]
-
-	float occlusionSum = 0.0f;
-	for (int i = 0; i < gSampleCount; ++i)
-	{
-		float3 offset = reflect(gOffsetVectors[i].xyz, randVec);
-		float flip = sign(dot(offset, sourceNormalV));
-
-		float3 samplePointV = sourcePositionV + flip * gOcclusionRadius * offset;								// q
-
-		float4 samplePointT = mul(float4(samplePointV, 1.0f), gProjTex);										// projQ
-		samplePointT /= samplePointT.w;
-
-		float rz = gDepthBuffer.Sample(DepthSampler, samplePointT.xy).r;										// rz
-
-		float3 r = (rz / samplePointV.z) * samplePointV;														// r
-
-		float distZ = sourcePositionV.z - r.z;																	// distZ
-		float dp = max(dot(sourceNormalV, normalize(r - sourcePositionV)), 0.0f);								// dp
-		float occlusion = dp * OcclusionFunction(distZ);														// occlusion
-
-		occlusionSum += occlusion;
-	}
-
-	occlusionSum /= gSampleCount;
-
-	//return float4(1.0f, 1.0f, 1.0f, 1.0f);
-	return float4(occlusionSum, occlusionSum, occlusionSum, 1.0f);
-	
-	//float access = 1.0f - occlusionSum;																			// access
-
-	//return saturate(pow(occlusionSum, 4.0f));
+	//return SSAOLuna(input);
+	return 1.0f - SSAOGameDev(input);
 }
 
 

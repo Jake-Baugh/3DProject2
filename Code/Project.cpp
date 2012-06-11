@@ -101,27 +101,31 @@ void Project::KeyPressed(Framework::ApplicationWindow* window, int keyCode)
 		break;
 
 		case VK_F2:
-			mBufferToRender = DeferredRenderer::C_GBUFFER_COLOR;
+			mBufferToRender = DeferredRenderer::GBuffer::Color;
 		break;
 
 		case VK_F3:
-			mBufferToRender = DeferredRenderer::C_GBUFFER_POSITION;
+			mBufferToRender = DeferredRenderer::GBuffer::Position;
 		break;
 
 		case VK_F4:
-			mBufferToRender = DeferredRenderer::C_GBUFFER_NORMAL;
+			mBufferToRender = DeferredRenderer::GBuffer::Normal;
 		break;
 
 		case VK_F5:
-			mBufferToRender = DeferredRenderer::C_GBUFFER_MATERIAL;
+			mBufferToRender = DeferredRenderer::GBuffer::Material;
 		break;
 
 		case VK_F6:
-			mBufferToRender = DeferredRenderer::C_GBUFFER_SSAO;
+			mBufferToRender = DeferredRenderer::GBuffer::PreSSAO;
 		break;
 
 		case VK_F7:
-			mBufferToRender = DeferredRenderer::C_GBUFFER_DEPTH;
+			mBufferToRender = DeferredRenderer::GBuffer::PostSSAO;
+		break;
+
+		case VK_F8:
+			mBufferToRender = DeferredRenderer::GBuffer::Depth;
 		break;
 
 		case 'F':

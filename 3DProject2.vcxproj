@@ -195,6 +195,7 @@
     <None Include="Resources\Effects\Morph.fx" />
     <None Include="Resources\Effects\Quad2D.fx" />
     <None Include="Resources\Effects\SSAO.fx" />
+    <None Include="Resources\Effects\SSAOBlur.fx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Code\Camera\CameraController.hpp" />

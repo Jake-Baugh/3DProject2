@@ -27,13 +27,7 @@ struct PointLight
 class DeferredRenderer 
 {
 public:
-	static const int C_GBUFFER_COLOR;
-	static const int C_GBUFFER_POSITION;
-	static const int C_GBUFFER_NORMAL;
-	static const int C_GBUFFER_MATERIAL;
-	static const int C_GBUFFER_SSAO;
-	static const int C_GBUFFER_DEPTH;
-	
+	enum GBuffer { Color, Position, Normal, Material, PreSSAO, PostSSAO, Depth, Count };
 
 	DeferredRenderer(Framework::D3DContext* d3dContext, int width, int height);
 	~DeferredRenderer() throw();
@@ -83,6 +77,7 @@ private:
 	ID3D10Texture2D* mNormalBuffer;
 	ID3D10Texture2D* mMaterialBuffer;
 	ID3D10Texture2D* mSSAOBuffer;
+	ID3D10Texture2D* mSSAOPostBuffer;
 	ID3D10Texture2D* mDepthStencilBuffer;
 
 	// Render/Depth views for rendering to the buffers
@@ -92,6 +87,7 @@ private:
 	ID3D10RenderTargetView* mNormalView;
 	ID3D10RenderTargetView* mMaterialView;
 	ID3D10RenderTargetView* mSSAOView;
+	ID3D10RenderTargetView* mSSAOPostView;
 	ID3D10DepthStencilView* mDepthStencilView;
 
 	// Shader resource views for reading from the buffers
@@ -101,6 +97,7 @@ private:
 	ID3D10ShaderResourceView* mNormalSRV;
 	ID3D10ShaderResourceView* mMaterialSRV;
 	ID3D10ShaderResourceView* mSSAOSRV;
+	ID3D10ShaderResourceView* mSSAOPostSRV;
 	ID3D10ShaderResourceView* mDepthStencilSRV;
 
 	// Contains the G buffers: color, normal and depth.

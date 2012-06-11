@@ -6,13 +6,15 @@ const D3DXMATRIX SSAO::C_TEXTURE_MATRIX(0.5f, 0.0f,  0.0f, 0.0f,
 										0.0f, 0.0f,  1.0f, 0.0f,
 										0.5f, 0.5f,  0.0f, 1.0f);
 
-SSAO::SSAO(ID3D10Device* device)
+SSAO::SSAO(ID3D10Device* device, int backBufferWidth, int backBufferHeight)
 	: mDevice(device)
 	, mFullscreenQuad(mDevice)
 	, mEffect(mDevice, "Resources/Effects/SSAO.fx")
+	, mBlurEffect(mDevice, "Resources/Effects/SSAOBlur.fx")
 	, mRandomTextureSRV(NULL)
 	, mOffsets(14)
 	, mFrustumFarCorners(4)
+	, mScreenSize((float)backBufferWidth, (float)backBufferHeight)
 {
 	Framework::Effect::InputLayoutVector inputLayout;
 	inputLayout.push_back(Framework::Effect::InputLayoutElement("POSITION", DXGI_FORMAT_R32G32B32_FLOAT));
@@ -21,6 +23,10 @@ SSAO::SSAO(ID3D10Device* device)
 
 	mEffect.GetTechniqueByIndex(0).GetPassByIndex(0).SetInputLayout(inputLayout);
 
+	inputLayout.erase(inputLayout.begin() + 1);
+
+	mBlurEffect.GetTechniqueByIndex(0).GetPassByIndex(0).SetInputLayout(inputLayout);
+	mBlurEffect.GetTechniqueByIndex(0).GetPassByIndex(1).SetInputLayout(inputLayout);
 
 	/*
 	SSAO::Vertex vertices[] = { { D3DXVECTOR3(-1.0f, -1.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 1.0f) }
@@ -59,6 +65,9 @@ SSAO::SSAO(ID3D10Device* device)
 		ID3D10EffectVariable* v = arrayVariable->GetElement(i);
 		v->AsVector()->SetFloatVector(mOffsets[i]);
 	}
+
+	mEffect.SetVariable("gScreenWidth", backBufferWidth);
+	mEffect.SetVariable("gScreenHeight", backBufferHeight);
 }
 
 void SSAO::DrawSSAOBuffer(const Camera::Camera& camera, const Helper::Frustum& frustum, ID3D10ShaderResourceView* positionBuffer, ID3D10ShaderResourceView* normalBuffer, ID3D10ShaderResourceView* depthBuffer)
@@ -84,7 +93,25 @@ void SSAO::DrawSSAOBuffer(const Camera::Camera& camera, const Helper::Frustum& f
 	for (unsigned int p = 0; p < mEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)
 	{
 		mEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mDevice);
-		//mDevice->DrawIndexed(6, 0, 0);
+		mDevice->Draw(mFullscreenQuad.GetElementCount(), 0);
+	}
+
+	
+
+}
+
+void SSAO::BlurSSAOBuffer(const Camera::Camera& camera, ID3D10ShaderResourceView* normalBuffer, ID3D10ShaderResourceView* depthBuffer, ID3D10ShaderResourceView* SSAOBuffer)
+{
+	mBlurEffect.SetVariable("gView", camera.GetView());
+	mBlurEffect.SetVariable("gNormalBuffer", normalBuffer);
+	mBlurEffect.SetVariable("gDepthBuffer", depthBuffer);
+	mBlurEffect.SetVariable("gInputImage", SSAOBuffer);
+	mBlurEffect.SetVariable("gTexelWidth", 1.0f / mScreenSize.x);
+	mBlurEffect.SetVariable("gTexelHeight", 1.0f / mScreenSize.y);
+
+	for (unsigned int p = 0; p < mBlurEffect.GetTechniqueByIndex(0).GetPassCount(); ++p)
+	{
+		mBlurEffect.GetTechniqueByIndex(0).GetPassByIndex(p).Apply(mDevice);
 		mDevice->Draw(mFullscreenQuad.GetElementCount(), 0);
 	}
 }

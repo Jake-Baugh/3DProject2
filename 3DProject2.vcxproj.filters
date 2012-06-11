@@ -132,6 +132,7 @@
     <None Include="Code\Camera\SplineCameraController.hpp" />
     <None Include="Resources\Effects\Morph.fx" />
     <None Include="Resources\Effects\SSAO.fx" />
+    <None Include="Resources\Effects\SSAOBlur.fx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Code\Framework\Effect\Effect.hpp">
