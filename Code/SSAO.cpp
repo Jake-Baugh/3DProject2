@@ -103,6 +103,7 @@ void SSAO::DrawSSAOBuffer(const Camera::Camera& camera, const Helper::Frustum& f
 void SSAO::BlurSSAOBuffer(const Camera::Camera& camera, ID3D10ShaderResourceView* normalBuffer, ID3D10ShaderResourceView* depthBuffer, ID3D10ShaderResourceView* SSAOBuffer)
 {
 	mBlurEffect.SetVariable("gView", camera.GetView());
+	mBlurEffect.SetVariable("gProjection", camera.GetProjection());
 	mBlurEffect.SetVariable("gNormalBuffer", normalBuffer);
 	mBlurEffect.SetVariable("gDepthBuffer", depthBuffer);
 	mBlurEffect.SetVariable("gInputImage", SSAOBuffer);

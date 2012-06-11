@@ -23,6 +23,7 @@ cbuffer cbEveryFrame
 	float gTexelWidth;
 	float gTexelHeight;
 	matrix gView;
+	matrix gProjection;
 };
 
 cbuffer cbSettings
@@ -93,8 +94,14 @@ float4 PS(PS_INPUT input, uniform bool gHorizontalBlur) : SV_TARGET0
 	float totalWeight = gWeights[5];
 	
 	float3 centerNormal = mul(float4(gNormalBuffer.Sample(NormalSampler, input.TexCoord).xyz, 1.0f), gView).xyz;
+	
+	
 	float centerDepth = gDepthBuffer.Sample(DepthSampler, input.TexCoord).r;
+	centerDepth = gProjection._43 / (centerDepth - gProjection._33);
+		
 	float4 centerNormalDepth = float4(centerNormal, centerDepth);
+
+
 
 	for (float i = -gBlurRadius; i <= gBlurRadius; ++i)
 	{
@@ -108,6 +115,7 @@ float4 PS(PS_INPUT input, uniform bool gHorizontalBlur) : SV_TARGET0
 
 		float3 neighborNormal = mul(float4(gNormalBuffer.Sample(NormalSampler, tex).xyz, 1.0f), gView).xyz;
 		float neighborDepth = gDepthBuffer.Sample(DepthSampler, tex).r;
+		neighborDepth = gProjection._43 / (neighborDepth - gProjection._33);
 		float4 neighborNormalDepth = float4(neighborNormal, neighborDepth);
 
 		if ( dot(neighborNormal, centerNormal) >= 0.8f &&

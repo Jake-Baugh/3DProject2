@@ -213,14 +213,14 @@ void DeferredRenderer::EndDeferredState(const Camera::Camera& camera, const Help
 	{
 		mSSAO.DrawSSAOBuffer(camera, frustum, mPositionSRV, mNormalSRV, mDepthStencilSRV);
 		
-		// Unbind from pixel shader
-		ID3D10ShaderResourceView* nullSRV = NULL;
-		mDevice->PSSetShaderResources(0, 1, &nullSRV);
-		
-		mDevice->OMSetRenderTargets(1, &mSSAOPostView, NULL);
-		mDevice->ClearRenderTargetView(mSSAOPostView, D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
+		//// Unbind from pixel shader
+		//ID3D10ShaderResourceView* nullSRV = NULL;
+		//mDevice->PSSetShaderResources(0, 1, &nullSRV);
+		//
+		//mDevice->OMSetRenderTargets(1, &mSSAOPostView, NULL);
+		//mDevice->ClearRenderTargetView(mSSAOPostView, D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f));
 
-		mSSAO.BlurSSAOBuffer(camera, mNormalSRV, mDepthStencilSRV, mSSAOSRV);
+		//mSSAO.BlurSSAOBuffer(camera, mNormalSRV, mDepthStencilSRV, mSSAOSRV);
 	}
 
 	ID3D10ShaderResourceView* nullSRV = NULL;
